@@ -16,12 +16,13 @@ export default function Navbar() {
     <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-3 sm:px-4 py-3 border-b bg-white dark:bg-gray-900 dark:border-gray-700">
       {/* LEFT */}
       <div className="flex items-center gap-3">
-       <button
-  onClick={toggleMobileSidebar}
-  className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 md:hidden"
+      <button
+  onClick={toggleCollapseSidebar}
+  className="hidden md:block p-2 rounded-full"
 >
   ☰
 </button>
+
 
         <h1 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100">
           CnTube
