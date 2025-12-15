@@ -14,7 +14,7 @@ import {
 import { useUIStore } from "@/store/uiStore";
 
 export default function Sidebar() {
-  const collapse = useUIStore((s) => s.collapseSidebar);          // desktop only
+  const collapse = useUIStore((s) => s.collapseSidebar); // desktop only
   const mobileSidebarOpen = useUIStore((s) => s.mobileSidebarOpen);
   const toggleMobileSidebar = useUIStore((s) => s.toggleMobileSidebar);
 
@@ -30,6 +30,7 @@ export default function Sidebar() {
     { icon: <Gamepad2 size={22} />, label: "Gaming" },
   ];
 
+  /* ---------------- DESKTOP CONTENT ---------------- */
   const desktopSidebarContent = (
     <nav className="mt-4 space-y-1">
       {items.map((item, i) => (
@@ -38,7 +39,6 @@ export default function Sidebar() {
           className="flex items-center gap-4 px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer rounded-xl transition text-gray-900 dark:text-gray-100"
         >
           <div className="min-w-[24px] flex justify-center">{item.icon}</div>
-          {/* hide text only on desktop when collapsed */}
           {!collapse && (
             <span className="text-[15px] font-medium whitespace-nowrap">
               {item.label}
@@ -49,6 +49,7 @@ export default function Sidebar() {
     </nav>
   );
 
+  /* ---------------- MOBILE CONTENT ---------------- */
   const mobileSidebarContent = (
     <nav className="mt-4 space-y-1">
       {items.map((item, i) => (
@@ -57,7 +58,6 @@ export default function Sidebar() {
           className="flex items-center gap-4 px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer rounded-xl transition text-gray-900 dark:text-gray-100"
         >
           <div className="min-w-[24px] flex justify-center">{item.icon}</div>
-          {/* always show text on mobile */}
           <span className="text-[15px] font-medium whitespace-nowrap">
             {item.label}
           </span>
@@ -66,11 +66,9 @@ export default function Sidebar() {
     </nav>
   );
 
-  // components/Sidebar.js
-// ...
   return (
     <>
-      {/* desktop sidebar */}
+      {/* ================= DESKTOP SIDEBAR ================= */}
       <aside
         className={`
           hidden md:flex
@@ -78,20 +76,21 @@ export default function Sidebar() {
           border-gray-200 dark:border-gray-800
           transition-all duration-300
           ${collapse ? "w-[90px]" : "w-[280px]"}
-          flex-col overflow-hidden pt-14
-          z-40               // <- add this
+          flex-col overflow-hidden pt-14 z-40
         `}
       >
         {desktopSidebarContent}
       </aside>
 
-
-      {/* mobile drawer sidebar */}
-      {mobileSidebarOpen && (
+      {/* ================= MOBILE SIDEBAR ================= */}
+      {/* ❗ Show ONLY when categories are NOT open */}
+      {!mobileSidebarOpen && (
         <div className="fixed inset-0 z-40 flex md:hidden">
           <div className="w-64 h-full bg-white dark:bg-gray-950 shadow-lg pt-14">
             {mobileSidebarContent}
           </div>
+
+          {/* overlay */}
           <div
             className="flex-1 bg-black/40"
             onClick={toggleMobileSidebar}

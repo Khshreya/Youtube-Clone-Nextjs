@@ -1,7 +1,8 @@
+// next.config.js
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    turbo: false, // force webpack in dev
+  turbopack: {
+    enabled: false, // use Webpack in dev
   },
 };
 

@@ -17,7 +17,7 @@ async function main() {
       },
       {
         title: "Epic Gaming Highlights",
-        videoUrl: "https://youtu.be/6Oms5cqj9G8?si=0C22moXxun6qJ5K_",
+        videoUrl: "https://www.youtube.com/live/Y6kHxZR57fI?si=MkbejGupMao7ttWN",
         thumbnail: "https://tse4.mm.bing.net/th/id/OIP.YWzIedzAOmr8L57f_1XquQHaEK?pid=Api&P=0&h=180",
         duration: "18:45",
         channel: "ProGamer",

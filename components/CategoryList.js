@@ -6,6 +6,7 @@ import { useUIStore } from "@/store/uiStore";
 export default function CategoryList() {
   const selectedCategory = useUIStore((s) => s.selectedCategory);
   const setSelectedCategory = useUIStore((s) => s.setSelectedCategory);
+  const mobileSidebarOpen = useUIStore((s) => s.mobileSidebarOpen);
 
   const categories = [
     "All",
@@ -23,14 +24,22 @@ export default function CategoryList() {
   ];
 
   return (
-    <div className="sticky top-14 z-40 bg-white dark:bg-gray-900 border-b dark:border-gray-700">
+    <div
+      className={`
+        z-40 bg-white dark:bg-gray-900 border-b dark:border-gray-700
+        transition-transform duration-300
+        md:sticky md:top-14 md:translate-y-0
+        fixed top-14 left-0 right-0
+        ${mobileSidebarOpen ? "translate-y-0" : "-translate-y-full"}
+        md:block
+      `}
+    >
       <div className="flex gap-3 overflow-x-auto px-3 py-3 scrollbar-hide">
         {categories.map((cat) => {
           const isActive = cat === selectedCategory;
           return (
             <button
               key={cat}
-              type="button"
               onClick={() => setSelectedCategory(cat)}
               className={`px-4 py-2 rounded-full whitespace-nowrap text-sm border transition
                 ${

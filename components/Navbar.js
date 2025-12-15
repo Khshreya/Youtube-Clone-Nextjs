@@ -17,13 +17,14 @@ export default function Navbar() {
       {/* LEFT */}
       <div className="flex items-center gap-3">
         <button
-          onClick={() => {
-            if (typeof window !== "undefined" && window.innerWidth < 768) {
-              toggleMobileSidebar();
-            } else {
-              toggleCollapseSidebar();
-            }
-          }}
+        onClick={() => {
+  if (typeof window !== "undefined" && window.innerWidth < 768) {
+    toggleMobileSidebar();
+  } else {
+    toggleCollapseSidebar();
+  }
+}}
+
           className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition"
         >
           ☰
