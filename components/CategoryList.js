@@ -7,6 +7,7 @@ export default function CategoryList() {
   const selectedCategory = useUIStore((s) => s.selectedCategory);
   const setSelectedCategory = useUIStore((s) => s.setSelectedCategory);
   const mobileSidebarOpen = useUIStore((s) => s.mobileSidebarOpen);
+  const closeMobileSidebar = useUIStore((s) => s.closeMobileSidebar);
 
   const categories = [
     "All",
@@ -40,7 +41,10 @@ export default function CategoryList() {
           return (
             <button
               key={cat}
-              onClick={() => setSelectedCategory(cat)}
+              onClick={() => {
+                setSelectedCategory(cat);
+                closeMobileSidebar(); // ✅ close on mobile click
+              }}
               className={`px-4 py-2 rounded-full whitespace-nowrap text-sm border transition
                 ${
                   isActive
