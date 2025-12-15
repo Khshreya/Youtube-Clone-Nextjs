@@ -1,10 +1,15 @@
-import VideoGridNew from "@/components/VideoGridNew";
+// app/page.js
+import { prisma } from "@/lib/prisma";
+import VideoGridClient from "@/components/VideoGridClient";
 
-export default function Home() {
+export default async function Home() {
+  const videos = await prisma.video.findMany({
+    orderBy: { createdAt: "desc" },
+  });
+
   return (
- <div className="mt-4 px-4">
-
-      <VideoGridNew />
+    <div className="mt-4">
+      <VideoGridClient videos={videos} />
     </div>
   );
 }

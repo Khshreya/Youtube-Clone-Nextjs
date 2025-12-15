@@ -6,7 +6,6 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-
 model Video {
   id         String   @id @default(uuid())
   title      String
@@ -14,7 +13,7 @@ model Video {
   thumbnail  String
   duration   String
   channel    String
-  createdAt DateTime @default(now())
+  category   String?   // new field (optional)
+  createdAt  DateTime @default(now())
 }
-
 

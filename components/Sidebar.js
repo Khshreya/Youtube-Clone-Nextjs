@@ -66,6 +66,8 @@ export default function Sidebar() {
     </nav>
   );
 
+  // components/Sidebar.js
+// ...
   return (
     <>
       {/* desktop sidebar */}
@@ -77,10 +79,12 @@ export default function Sidebar() {
           transition-all duration-300
           ${collapse ? "w-[90px]" : "w-[280px]"}
           flex-col overflow-hidden pt-14
+          z-40               // <- add this
         `}
       >
         {desktopSidebarContent}
       </aside>
+
 
       {/* mobile drawer sidebar */}
       {mobileSidebarOpen && (

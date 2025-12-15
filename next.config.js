@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    turbopack: false,
+    turbo: false, // force webpack in dev
   },
 };
 
