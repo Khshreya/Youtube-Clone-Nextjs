@@ -25,11 +25,10 @@ export default function CategoryList() {
   return (
     <div
       className={
-        "fixed top-14 left-0 right-0 z-40 " +
+        "sticky top-14 w-full z-40 " +
         "bg-white dark:bg-gray-900 " +
         "border-b dark:border-gray-700 " +
         "transition-all duration-300 " +
-        "md:sticky md:top-14 " +
         (mobileSidebarOpen ? "hidden md:block" : "block")
       }
     >

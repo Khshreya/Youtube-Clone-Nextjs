@@ -14,10 +14,10 @@ export default function RootLayout({ children }) {
           <div className="flex-1 pt-14">
             <Navbar />
 
-            {/* ✅ MOBILE SEARCH ONLY */}
+            {/*  MOBILE SEARCH ONLY */}
             <MobileSearchBar />
 
-            {/* ✅ CATEGORY LIST STAYS */}
+            {/*  CATEGORY LIST STAYS */}
             <CategoryList />
 
             {children}
