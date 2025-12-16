@@ -6,6 +6,8 @@ export default function CategoryList() {
   const selectedCategory = useUIStore((s) => s.selectedCategory);
   const setSelectedCategory = useUIStore((s) => s.setSelectedCategory);
   const mobileSidebarOpen = useUIStore((s) => s.mobileSidebarOpen);
+  const collapseSidebar = useUIStore((s) => s.collapseSidebar);
+  const leftOffsetClass = collapseSidebar ? "md:left-[90px]" : "md:left-[280px]";
 
   const categories = [
     "All",
@@ -25,8 +27,9 @@ export default function CategoryList() {
   return (
     <div
       className={
-        "sticky top-14 w-full z-40 " +
-        "bg-white dark:bg-gray-900 " +
+        "sticky top-14 w-full z-40 inset-x-0 md:right-0 " +
+        leftOffsetClass +
+        " bg-white dark:bg-gray-900 " +
         "border-b dark:border-gray-700 " +
         "transition-all duration-300 " +
         (mobileSidebarOpen ? "hidden md:block" : "block")
