@@ -1,4 +1,3 @@
-// components/CategoryList.js
 "use client";
 
 import { useUIStore } from "@/store/uiStore";
@@ -28,11 +27,10 @@ export default function CategoryList() {
     <div
       className={`
         z-40 bg-white dark:bg-gray-900 border-b dark:border-gray-700
-        transition-transform duration-300
-        md:sticky md:top-14 md:translate-y-0
+        transition-all duration-300
+        md:sticky md:top-14
         fixed top-14 left-0 right-0
-        ${mobileSidebarOpen ? "translate-y-0" : "-translate-y-full"}
-        md:block
+        ${mobileSidebarOpen ? "hidden md:block" : "block"}
       `}
     >
       <div className="flex gap-3 overflow-x-auto px-3 py-3 scrollbar-hide">
@@ -43,7 +41,7 @@ export default function CategoryList() {
               key={cat}
               onClick={() => {
                 setSelectedCategory(cat);
-                closeMobileSidebar(); // ✅ close on mobile click
+                closeMobileSidebar();
               }}
               className={`px-4 py-2 rounded-full whitespace-nowrap text-sm border transition
                 ${
