@@ -2,22 +2,28 @@
 import { create } from "zustand";
 
 export const useUIStore = create((set) => ({
-  //  Dark mode
+  // Dark mode
   darkMode: false,
   toggleDarkMode: () => set((s) => ({ darkMode: !s.darkMode })),
 
-  //  Desktop sidebar
+  // Desktop sidebar
   collapseSidebar: false,
   toggleCollapseSidebar: () =>
     set((s) => ({ collapseSidebar: !s.collapseSidebar })),
 
-  //  Mobile category bar
+  //  MOBILE SIDEBAR (LEFT MENU)
   mobileSidebarOpen: false,
   toggleMobileSidebar: () =>
     set((s) => ({ mobileSidebarOpen: !s.mobileSidebarOpen })),
   closeMobileSidebar: () => set({ mobileSidebarOpen: false }),
 
-  //  Search
+  // MOBILE CATEGORY BAR (NEW)
+  mobileCategoryOpen: false,
+  toggleMobileCategory: () =>
+    set((s) => ({ mobileCategoryOpen: !s.mobileCategoryOpen })),
+  closeMobileCategory: () => set({ mobileCategoryOpen: false }),
+
+  // Search
   searchTerm: "",
   setSearchTerm: (value) => set({ searchTerm: value }),
 

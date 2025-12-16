@@ -13,7 +13,7 @@ import {
 import { useUIStore } from "@/store/uiStore";
 
 export default function Sidebar() {
-  const collapse = useUIStore((s) => s.collapseSidebar);
+  const collapse = useUIStore((s) => s.collapseSidebar); // desktop
   const mobileSidebarOpen = useUIStore((s) => s.mobileSidebarOpen);
   const toggleMobileSidebar = useUIStore((s) => s.toggleMobileSidebar);
 
@@ -46,10 +46,19 @@ export default function Sidebar() {
           {items.map((item, i) => (
             <div
               key={i}
-              className="flex items-center gap-4 px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer rounded-xl transition"
+              className="flex items-center gap-4 px-4 py-3
+              hover:bg-gray-100 dark:hover:bg-gray-800
+              cursor-pointer rounded-xl transition
+              text-gray-900 dark:text-gray-100"
             >
-              {item.icon}
-              {!collapse && <span>{item.label}</span>}
+              <div className="min-w-[24px] flex justify-center">
+                {item.icon}
+              </div>
+              {!collapse && (
+                <span className="text-[15px] font-medium whitespace-nowrap">
+                  {item.label}
+                </span>
+              )}
             </div>
           ))}
         </nav>
@@ -58,15 +67,22 @@ export default function Sidebar() {
       {/* ================= MOBILE SIDEBAR ================= */}
       {mobileSidebarOpen && (
         <div className="fixed inset-0 z-50 flex md:hidden">
-          <div className="w-64 h-full bg-white dark:bg-gray-950 pt-14">
+          <div className="w-64 h-full bg-white dark:bg-gray-950 shadow-lg pt-14">
             <nav className="mt-4 space-y-1">
               {items.map((item, i) => (
                 <div
                   key={i}
-                  className="flex items-center gap-4 px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer rounded-xl"
+                  className="flex items-center gap-4 px-4 py-3
+                  hover:bg-gray-100 dark:hover:bg-gray-800
+                  cursor-pointer rounded-xl transition
+                  text-gray-900 dark:text-gray-100"
                 >
-                  {item.icon}
-                  <span>{item.label}</span>
+                  <div className="min-w-[24px] flex justify-center">
+                    {item.icon}
+                  </div>
+                  <span className="text-[15px] font-medium">
+                    {item.label}
+                  </span>
                 </div>
               ))}
             </nav>
