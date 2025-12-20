@@ -6,21 +6,16 @@ const CURRENT_USER = "Shreya";
 export async function POST(req) {
   const { videoId } = await req.json();
 
-  await prisma.history.upsert({
-    where: {
-      user_videoId: {
+  try {
+    await prisma.watchLater.create({
+      data: {
         user: CURRENT_USER,
         videoId,
       },
-    },
-    update: {
-      watchedAt: new Date(), // ⏱ move to top
-    },
-    create: {
-      user: CURRENT_USER,
-      videoId,
-    },
-  });
+    });
+  } catch (err) {
+    // Ignore duplicate error
+  }
 
   return NextResponse.json({ success: true });
 }

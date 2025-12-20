@@ -4,7 +4,12 @@ import VideoGridClient from "@/components/VideoGridClient";
 
 export default async function Home() {
   const videos = await prisma.video.findMany({
-    orderBy: { createdAt: "desc" },
+    where: {
+      contentType: "video", 
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
   });
 
   return (

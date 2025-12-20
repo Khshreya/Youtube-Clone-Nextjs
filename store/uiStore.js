@@ -2,26 +2,35 @@
 import { create } from "zustand";
 
 export const useUIStore = create((set) => ({
-  //  Dark mode
+  /* ---------------- THEME ---------------- */
   darkMode: false,
-  toggleDarkMode: () => set((s) => ({ darkMode: !s.darkMode })),
+  toggleDarkMode: () =>
+    set((s) => ({ darkMode: !s.darkMode })),
 
-  //  Desktop sidebar
+  /* ---------------- DESKTOP SIDEBAR ---------------- */
   collapseSidebar: false,
   toggleCollapseSidebar: () =>
     set((s) => ({ collapseSidebar: !s.collapseSidebar })),
 
-  //  Mobile category bar
+  /* ---------------- MOBILE SIDEBAR ---------------- */
   mobileSidebarOpen: false,
   toggleMobileSidebar: () =>
     set((s) => ({ mobileSidebarOpen: !s.mobileSidebarOpen })),
-  closeMobileSidebar: () => set({ mobileSidebarOpen: false }),
+  closeMobileSidebar: () =>
+    set({ mobileSidebarOpen: false }),
 
-  //  Search
+  /* ---------------- SIDEBAR ACTIVE MENU ---------------- */
+  activeMenu: "Home",
+  setActiveMenu: (menu) =>
+    set({ activeMenu: menu }),
+
+  /* ---------------- SEARCH ---------------- */
   searchTerm: "",
-  setSearchTerm: (value) => set({ searchTerm: value }),
+  setSearchTerm: (value) =>
+    set({ searchTerm: value }),
 
-  // Category
+  /* ---------------- CATEGORY ---------------- */
   selectedCategory: "All",
-  setSelectedCategory: (cat) => set({ selectedCategory: cat }),
+  setSelectedCategory: (cat) =>
+    set({ selectedCategory: cat }),
 }));

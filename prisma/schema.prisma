@@ -6,14 +6,48 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
 model Video {
-  id         String   @id @default(uuid())
-  title      String
-  videoUrl   String
-  thumbnail  String
-  duration   String
-  channel    String
-  category   String?   // new field (optional)
-  createdAt  DateTime @default(now())
+  id          String       @id @default(uuid())
+  title       String
+  videoUrl    String
+  thumbnail   String
+  duration    String
+  channel     String
+  category    String?
+  contentType String?
+  history     History[]
+  watchLater  WatchLater[]
+
+  createdAt DateTime @default(now())
 }
 
+model Subscription {
+  id        String   @id @default(uuid())
+  user      String
+  channel   String
+  createdAt DateTime @default(now())
+
+  @@unique([user, channel])
+}
+
+model History {
+  id        String   @id @default(uuid())
+  user      String
+  videoId   String
+  watchedAt DateTime @default(now())
+
+  video Video @relation(fields: [videoId], references: [id])
+    @@unique([user, videoId])
+}
+
+model WatchLater {
+  id      String   @id @default(uuid())
+  user    String
+  videoId String
+  addedAt DateTime @default(now())
+
+  video Video @relation(fields: [videoId], references: [id])
+
+  @@unique([user, videoId]) 
+}

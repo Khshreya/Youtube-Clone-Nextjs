@@ -1,5 +1,6 @@
 // ThemeWrapper.js
 "use client";
+
 import { useUIStore } from "@/store/uiStore";
 
 export default function ThemeWrapper({ children }) {
@@ -7,9 +8,13 @@ export default function ThemeWrapper({ children }) {
 
   return (
     <div
-      className={`${
-        darkMode ? "dark bg-black text-white" : "bg-white text-black"
-      } min-h-screen flex flex-col md:flex-row transition-all duration-300`}
+      className={`
+        min-h-screen flex flex-col md:flex-row transition-all duration-300
+        ${darkMode 
+          ? "dark bg-gray-900 text-white" 
+          : "bg-white text-black"
+        }
+      `}
     >
       {children}
     </div>

@@ -6,19 +6,20 @@ const CURRENT_USER = "Shreya";
 export async function POST(req) {
   const { videoId } = await req.json();
 
-  await prisma.history.upsert({
+  // 🔥 1. Remove old history entry (if exists)
+  await prisma.history.deleteMany({
     where: {
-      user_videoId: {
-        user: CURRENT_USER,
-        videoId,
-      },
-    },
-    update: {
-      watchedAt: new Date(), // ⏱ move to top
-    },
-    create: {
       user: CURRENT_USER,
       videoId,
+    },
+  });
+
+  // 🔥 2. Insert fresh entry (moves to top)
+  await prisma.history.create({
+    data: {
+      user: CURRENT_USER,
+      videoId,
+      watchedAt: new Date(),
     },
   });
 
