@@ -14,7 +14,7 @@ import {
 import { useUIStore } from "@/store/uiStore";
 
 export default function Sidebar() {
-  const collapse = useUIStore((s) => s.collapseSidebar);
+  const collapseSidebar = useUIStore((s) => s.collapseSidebar);
   const mobileSidebarOpen = useUIStore((s) => s.mobileSidebarOpen);
   const toggleMobileSidebar = useUIStore((s) => s.toggleMobileSidebar);
 
@@ -37,11 +37,11 @@ export default function Sidebar() {
       className="
         flex items-center gap-4 px-4 py-3 rounded-xl
         cursor-pointer transition
-        hover:bg-gray-100 dark:bg-gray-900
+        hover:bg-gray-100 dark:hover:bg-gray-800
       "
     >
       <Icon size={22} />
-      {!collapse && (
+      {!collapseSidebar && (
         <span className="text-[15px] font-medium">{label}</span>
       )}
     </Link>
@@ -49,12 +49,14 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* DESKTOP */}
+      {/* ================= DESKTOP SIDEBAR ================= */}
       <aside
         className={`
-          hidden md:flex h-screen bg-white dark:bg-gray-900
-          ${collapse ? "w-[90px]" : "w-[280px]"}
-          pt-16 px-2 flex-col transition-all duration-300
+          hidden md:flex h-screen
+          bg-white dark:bg-gray-900
+          pt-16 px-2 flex-col
+          transition-all duration-300
+          ${collapseSidebar ? "w-[90px]" : "w-[280px]"}
         `}
       >
         {items.map((item) => (
@@ -67,9 +69,10 @@ export default function Sidebar() {
         ))}
       </aside>
 
-      {/* MOBILE */}
-      {!mobileSidebarOpen && (
+      {/* ================= MOBILE SIDEBAR ================= */}
+      {mobileSidebarOpen && (
         <div className="fixed inset-0 z-40 flex md:hidden">
+          {/* Sidebar */}
           <div className="w-64 bg-white dark:bg-gray-900 pt-16 px-2 shadow-xl">
             {items.map((item) => (
               <NavItem
@@ -81,8 +84,9 @@ export default function Sidebar() {
             ))}
           </div>
 
+          {/* Overlay */}
           <div
-            className="flex-1 dark:bg-gray-900"
+            className="flex-1 bg-black/40"
             onClick={toggleMobileSidebar}
           />
         </div>
