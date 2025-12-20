@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/prisma";
+export const dynamic = "force-dynamic";
+
 import VideoGridClient from "@/components/VideoGridClient";
 
 const MY_CHANNEL = "CodeWithShreya";

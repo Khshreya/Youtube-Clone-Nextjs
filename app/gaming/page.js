@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/prisma";
+export const dynamic = "force-dynamic";
+
 import VideoGridClient from "@/components/VideoGridClient";
 
 export default async function GamingPage() {

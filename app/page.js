@@ -1,4 +1,6 @@
 // app/page.js
+export const dynamic = "force-dynamic";
+
 import { prisma } from "@/lib/prisma";
 import VideoGridClient from "@/components/VideoGridClient";
 
