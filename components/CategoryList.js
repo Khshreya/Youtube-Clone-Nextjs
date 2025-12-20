@@ -31,7 +31,9 @@ export default function CategoryList() {
     else if (pathname === "/trending") setSelectedCategory("Trending");
     else setSelectedCategory("All");
   }, [pathname, setSelectedCategory]);
-
+if (pathname.startsWith("/shorts")) {
+    return null;
+  }
   return (
     <div className="sticky top-14 z-40 bg-white dark:bg-gray-900  pt-2">
       <div className="flex gap-3 px-4 pb-3 overflow-x-auto scrollbar-hide">
