@@ -6,7 +6,7 @@ const CURRENT_USER = "Shreya";
 export async function POST(req) {
   const { videoId } = await req.json();
 
-  // 🔥 1. Remove old history entry (if exists)
+  //  1. Remove old history entry (if exists)
   await prisma.history.deleteMany({
     where: {
       user: CURRENT_USER,
@@ -14,7 +14,7 @@ export async function POST(req) {
     },
   });
 
-  // 🔥 2. Insert fresh entry (moves to top)
+  //  2. Insert fresh entry (moves to top)
   await prisma.history.create({
     data: {
       user: CURRENT_USER,

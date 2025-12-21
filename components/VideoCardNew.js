@@ -10,7 +10,7 @@ export default function VideoCardNew({ video }) {
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // ❌ Pages where Watch Later should NOT appear
+  // Pages where Watch Later should NOT appear
   const hideWatchLater =
     pathname.startsWith("/history") ||
     pathname.startsWith("/watch-later") ||
@@ -23,7 +23,7 @@ export default function VideoCardNew({ video }) {
       ? `/shorts?video=${video.id}`
       : `/watch/${video.id}`;
 
-  // ▶️ Open video
+  // ▶ Open video
   const handleClick = async () => {
     try {
       await fetch("/api/history", {
@@ -39,7 +39,7 @@ export default function VideoCardNew({ video }) {
     router.refresh();
   };
 
-  // ⏰ Watch Later
+  //  Watch Later
   const handleWatchLater = async (e) => {
     e.stopPropagation();
 
@@ -77,7 +77,7 @@ export default function VideoCardNew({ video }) {
         />
       </div>
 
-      {/* ⏰ WATCH LATER BUTTON (conditionally rendered) */}
+      {/* WATCH LATER BUTTON (conditionally rendered) */}
       {!hideWatchLater && (
         <button
           onClick={handleWatchLater}

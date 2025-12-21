@@ -14,7 +14,7 @@ export async function POST(req) {
       },
     },
     update: {
-      watchedAt: new Date(), // ⏱ move to top
+      watchedAt: new Date(), 
     },
     create: {
       user: CURRENT_USER,
