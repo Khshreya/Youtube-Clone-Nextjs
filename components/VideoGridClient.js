@@ -8,7 +8,7 @@ export default function VideoGridClient({ videos = [] }) {
   const selectedCategory = useUIStore((s) => s.selectedCategory);
 
   const filtered = videos.filter((video) => {
-    // ✅ VERY IMPORTANT GUARD
+    //  VERY IMPORTANT GUARD
     if (!video) return false;
 
     const matchesSearch =

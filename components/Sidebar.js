@@ -74,7 +74,7 @@ export default function Sidebar() {
 
       {/* ================= MOBILE SIDEBAR ================= */}
       {mobileSidebarOpen && (
-        <div className="fixed inset-0 z-40 flex md:hidden">
+        <div className="fixed inset-0 z-50 flex md:hidden">
           {/* Sidebar */}
           <div className="w-64 bg-white dark:bg-gray-900 pt-16 px-2 shadow-xl">
             {items.map((item) => (
