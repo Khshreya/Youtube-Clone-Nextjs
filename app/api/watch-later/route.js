@@ -1,21 +1,28 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
-
-const CURRENT_USER = "Shreya";
+import { getCurrentUser } from "@/lib/auth";
 
 export async function POST(req) {
-  const { videoId } = await req.json();
-
-  try {
-    await prisma.watchLater.create({
-      data: {
-        user: CURRENT_USER,
-        videoId,
-      },
-    });
-  } catch (err) {
-    // Ignore duplicate error
+  const user = await getCurrentUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  return NextResponse.json({ success: true });
+  const { videoId } = await req.json();
+
+  await prisma.watchLater.upsert({
+    where: {
+      userId_videoId: {
+        userId: user.id,
+        videoId,
+      },
+    },
+    update: {},
+    create: {
+      userId: user.id,
+      videoId,
+    },
+  });
+
+  return NextResponse.json({ saved: true });
 }

@@ -1,42 +1,49 @@
 import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth";
+import SubscriptionsClient from "./SubscriptionsClient";
+
 export const dynamic = "force-dynamic";
 
-import VideoGridClient from "@/components/VideoGridClient";
-
-const CURRENT_USER = "Shreya";
-
 export default async function SubscriptionsPage() {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    return (
+      <div className="p-6 text-gray-500">
+        Please login to view subscriptions.
+      </div>
+    );
+  }
+
+  // 1️⃣ Get subscribed channels
   const subs = await prisma.subscription.findMany({
-    where: { user: CURRENT_USER },
+    where: { userId: user.id },
   });
 
   const channels = subs.map((s) => s.channel);
 
+  if (channels.length === 0) {
+    return (
+      <div className="p-6 text-gray-500">
+        You haven’t subscribed to any channels yet.
+      </div>
+    );
+  }
+
+  // 2️⃣ Get videos ONLY from subscribed channels (include shorts)
   const videos = await prisma.video.findMany({
     where: {
-      contentType: "video",
-      channel: {
-        in: channels,
-      },
+      channel: { in: channels },
+      contentType: { in: ["video", "short"] },
     },
-    orderBy: {
-      createdAt: "desc",
-    },
+    orderBy: { createdAt: "desc" },
   });
 
-  return (
-    <div className="p-4">
-      <h1 className="text-2xl font-semibold mb-4">
-        Subscriptions
-      </h1>
+  // 3️⃣ Group videos by channel
+  const grouped = channels.map((channel) => ({
+    channel,
+    videos: videos.filter((v) => v.channel === channel),
+  }));
 
-      {videos.length === 0 ? (
-        <p className="text-gray-500">
-          You haven’t subscribed to any channels yet.
-        </p>
-      ) : (
-        <VideoGridClient videos={videos} />
-      )}
-    </div>
-  );
+  return <SubscriptionsClient initialSubs={grouped} />;
 }

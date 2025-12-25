@@ -6,6 +6,8 @@ import {
   PlaySquare,
   Clapperboard,
   Clock,
+  ThumbsUp,
+
   Flame,
   Music,
   Gamepad2,
@@ -25,6 +27,7 @@ export default function Sidebar() {
     { icon: GraduationCap, label: "Your Channel", href: "/channel" },
     { icon: Clock, label: "History", href: "/history" },
     { icon: Clock, label: "Watch Later", href: "/watch-later" },
+    { icon: ThumbsUp, label: "Liked Videos", href: "/liked" },
     { icon: Flame, label: "Trending", href: "/trending" },
     { icon: Music, label: "Music", href: "/music" },
     { icon: Gamepad2, label: "Gaming", href: "/gaming" },

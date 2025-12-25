@@ -78,25 +78,7 @@ export default function VideoCardNew({ video }) {
       </div>
 
       {/* WATCH LATER BUTTON (conditionally rendered) */}
-      {!hideWatchLater && (
-        <button
-          onClick={handleWatchLater}
-          className={`
-            absolute top-2 right-2 z-10
-            px-2 py-1 rounded text-xs
-            transition-opacity duration-200
-            ${saved
-              ? "bg-green-600 text-white"
-              : "bg-black/70 text-white hover:bg-black"
-            }
-            opacity-0
-            md:group-hover:opacity-100
-            group-focus-within:opacity-100
-          `}
-        >
-          {saved ? "✓ Saved" : loading ? "Saving..." : "⏰ Watch later"}
-        </button>
-      )}
+      
 
       {/* Text */}
       <h3 className="mt-2 font-semibold text-sm sm:text-base truncate">

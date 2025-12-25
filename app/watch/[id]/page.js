@@ -1,45 +1,58 @@
-// app/watch/[id]/page.js
 import { prisma } from "@/lib/prisma";
+import { notFound } from "next/navigation";
+import LikeDislikeBar from "@/components/LikeDislikeBar"; 
+import WatchLaterButton from "@/components/WatchLaterButton";
+import VideoActions from "@/components/VideoActions";
+
 
 export default async function WatchPage({ params }) {
   const { id } = await params;
+
+  if (!id) notFound();
 
   const video = await prisma.video.findUnique({
     where: { id },
   });
 
-  if (!video) {
-    return <div className="p-4">Video not found</div>;
-  }
+  if (!video) notFound();
 
-  // extract videoId from URLs like: https://youtu.be/d8uV8U6lWa0?si=...
   const match = video.videoUrl.match(
     /(?:youtu\.be\/|v=)([A-Za-z0-9_-]{11})/
   );
   const videoId = match ? match[1] : null;
 
   return (
-    <div className="p-6 pt-24">
-      <h1 className="text-2xl font-bold mb-4">{video.title}</h1>
-
-      {videoId ? (
-        <div className="w-full max-w-4xl aspect-video">
+    <div className="pt-16 px-6 max-w-4xl mx-auto">
+      {/* VIDEO */}
+      <div className="w-full aspect-video bg-black">
+        {videoId ? (
           <iframe
-            className="w-full h-full rounded-lg"
-            src={`https://www.youtube.com/embed/${videoId}`}
-            title={video.title}
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            src={`https://www.youtube.com/embed/${videoId}?controls=1&modestbranding=1&rel=0&iv_load_policy=3`}
+            className="w-full h-full"
+            allow="autoplay; encrypted-media"
             allowFullScreen
           />
-        </div>
-      ) : (
-        <p className="text-red-500">Invalid YouTube URL</p>
-      )}
+        ) : (
+          <div className="text-white flex items-center justify-center h-full">
+            Invalid video
+          </div>
+        )}
+      </div>
 
-      <p className="mt-2 text-gray-600 dark:text-gray-300">
+      {/* TITLE */}
+      <h1 className="text-lg font-semibold mt-4">
+        {video.title}
+      </h1>
+
+      {/* CHANNEL */}
+      <p className="text-sm text-gray-500 mt-1">
         {video.channel} • {video.duration}
       </p>
+
+      {/* ACTION BAR */}
+    <VideoActions video={video} />
+
+
     </div>
   );
 }

@@ -1,14 +1,42 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useUIStore } from "@/store/uiStore";
 
 export default function Navbar() {
+  const router = useRouter();
+
   const toggleCollapseSidebar = useUIStore((s) => s.toggleCollapseSidebar);
   const toggleMobileSidebar = useUIStore((s) => s.toggleMobileSidebar);
   const toggleDarkMode = useUIStore((s) => s.toggleDarkMode);
   const darkMode = useUIStore((s) => s.darkMode);
   const searchTerm = useUIStore((s) => s.searchTerm);
   const setSearchTerm = useUIStore((s) => s.setSearchTerm);
+
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await fetch("/api/auth/me");
+        const data = await res.json();
+        setUser(data.user);
+      } catch {
+        setUser(null);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    setUser(null);
+    router.push("/login");
+    router.refresh();
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-900">
@@ -44,12 +72,40 @@ export default function Navbar() {
         </div>
 
         {/* RIGHT */}
-        <button
-          onClick={toggleDarkMode}
-          className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
-        >
-          {darkMode ? "☀️" : "🌙"}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={toggleDarkMode}
+            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+          >
+            {darkMode ? "☀️" : "🌙"}
+          </button>
+
+          {!user && (
+            <>
+              <Link
+                href="/login"
+                className="text-sm px-3 py-1 border rounded"
+              >
+                Login
+              </Link>
+              <Link
+                href="/register"
+                className="text-sm px-3 py-1 border rounded"
+              >
+                Register
+              </Link>
+            </>
+          )}
+
+          {user && (
+            <button
+              onClick={handleLogout}
+              className="text-sm px-3 py-1 border rounded"
+            >
+              Logout
+            </button>
+          )}
+        </div>
       </div>
     </nav>
   );

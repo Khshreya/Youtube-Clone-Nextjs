@@ -25,7 +25,7 @@ async function main() {
     });
   }
 
-  console.log("✅ Duplicate history entries removed:", toDelete.length);
+  console.log(" Duplicate history entries removed:", toDelete.length);
 }
 
 main()

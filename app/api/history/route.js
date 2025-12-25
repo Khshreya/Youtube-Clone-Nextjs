@@ -1,25 +1,30 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
-
-const CURRENT_USER = "Shreya";
+import { getCurrentUser } from "@/lib/auth";
 
 export async function POST(req) {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 }
+    );
+  }
+
   const { videoId } = await req.json();
 
-  //  1. Remove old history entry (if exists)
-  await prisma.history.deleteMany({
+  await prisma.history.upsert({
     where: {
-      user: CURRENT_USER,
-      videoId,
+      userId_videoId: {
+        userId: user.id,
+        videoId,
+      },
     },
-  });
-
-  //  2. Insert fresh entry (moves to top)
-  await prisma.history.create({
-    data: {
-      user: CURRENT_USER,
+    update: {},
+    create: {
+      userId: user.id,
       videoId,
-      watchedAt: new Date(),
     },
   });
 

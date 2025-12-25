@@ -7,8 +7,41 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/**
+ * ================= SESSION =================
+ */
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+/**
+ * ================= USER =================
+ */
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+
+  sessions      Session[]
+  history       History[]
+  watchLater    WatchLater[]
+  subscriptions Subscription[]
+  likes         Like[]
+}
+
+/**
+ * ================= VIDEO =================
+ */
 model Video {
-  id          String       @id @default(uuid())
+  id          String   @id @default(uuid())
   title       String
   videoUrl    String
   thumbnail   String
@@ -16,38 +49,68 @@ model Video {
   channel     String
   category    String?
   contentType String?
-  history     History[]
-  watchLater  WatchLater[]
+  createdAt   DateTime @default(now())
 
-  createdAt DateTime @default(now())
+  history    History[]
+  watchLater WatchLater[]
+  likes      Like[]
 }
 
-model Subscription {
-  id        String   @id @default(uuid())
-  user      String
-  channel   String
-  createdAt DateTime @default(now())
-
-  @@unique([user, channel])
-}
-
+/**
+ * ================= HISTORY =================
+ */
 model History {
   id        String   @id @default(uuid())
-  user      String
+  userId    String
   videoId   String
   watchedAt DateTime @default(now())
 
-  video Video @relation(fields: [videoId], references: [id])
-    @@unique([user, videoId])
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video Video @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, videoId])
 }
 
+/**
+ * ================= WATCH LATER =================
+ */
 model WatchLater {
   id      String   @id @default(uuid())
-  user    String
+  userId  String
   videoId String
   addedAt DateTime @default(now())
 
-  video Video @relation(fields: [videoId], references: [id])
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video Video @relation(fields: [videoId], references: [id], onDelete: Cascade)
 
-  @@unique([user, videoId]) 
+  @@unique([userId, videoId])
+}
+
+/**
+ * ================= SUBSCRIPTION =================
+ */
+model Subscription {
+  id        String   @id @default(uuid())
+  userId    String
+  channel   String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, channel])
+}
+
+/**
+ * ================= LIKE / DISLIKE =================
+ */
+model Like {
+  id      String @id @default(uuid())
+  userId  String
+  videoId String
+  value   Int // 1 = like, -1 = dislike
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video Video @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, videoId])
 }

@@ -2,6 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { getYouTubeId } from "@/utils/getYouTubeId";
+import LikeDislikeBar from "@/components/LikeDislikeBar";
+import WatchLaterButton from "@/components/WatchLaterButton";
+import SubscribeButton from "@/components/SubscribeButton";
 
 export default function ShortsFeed({ shorts }) {
   const containerRefs = useRef([]);
@@ -10,12 +13,8 @@ export default function ShortsFeed({ shorts }) {
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [audioEnabled, setAudioEnabled] = useState(false);
-  const [savedMap, setSavedMap] = useState({});
 
-  /* ---------------------------
-     Intersection Observer
-     (detect active short)
-  ---------------------------- */
+  /* Detect active short */
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -32,9 +31,7 @@ export default function ShortsFeed({ shorts }) {
     return () => observer.disconnect();
   }, []);
 
-  /* ---------------------------
-     Play / Pause MP4 Shorts
-  ---------------------------- */
+  /* Play / Pause local videos */
   useEffect(() => {
     videoRefs.current.forEach((video, i) => {
       if (!video) return;
@@ -48,9 +45,7 @@ export default function ShortsFeed({ shorts }) {
     });
   }, [activeIndex]);
 
-  /* ---------------------------
-     Save to History (once)
-  ---------------------------- */
+  /* Save to history */
   useEffect(() => {
     const short = shorts[activeIndex];
     if (!short) return;
@@ -65,52 +60,29 @@ export default function ShortsFeed({ shorts }) {
     }).catch(() => {});
   }, [activeIndex, shorts]);
 
-  /* ---------------------------
-     Watch Later
-  ---------------------------- */
-  const handleWatchLater = async (e, short) => {
-    e.stopPropagation();
-    if (savedMap[short.id]) return;
-
-    try {
-      await fetch("/api/watch-later", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ videoId: short.id }),
-      });
-
-      setSavedMap((prev) => ({
-        ...prev,
-        [short.id]: true,
-      }));
-    } catch (err) {
-      console.error("Watch later failed", err);
-    }
-  };
-
   return (
-    <div className="h-[calc(100vh-56px)] overflow-y-scroll snap-y snap-mandatory bg-white dark:bg-gray-900">
+    <div className="h-[calc(100vh-56px)] overflow-y-scroll snap-y snap-mandatory ">
       {shorts.map((short, i) => {
         const ytId = getYouTubeId(short.videoUrl);
         const isActive = i === activeIndex;
-        const isSaved = savedMap[short.id];
 
         return (
           <div
             key={short.id}
             data-index={i}
             ref={(el) => (containerRefs.current[i] = el)}
-            className="h-[calc(100vh-56px)] snap-start flex justify-center items-center"
+            className="h-[calc(100vh-56px)] snap-start flex justify-center items-center relative"
           >
-            <div className="relative w-full max-w-sm h-full bg-black overflow-hidden">
-              {/* ---------------- VIDEO ---------------- */}
+            <div className="relative w-full max-w-sm h-full overflow-hidden bg-black">
+
+              {/* VIDEO LAYER (NON CLICKABLE) */}
               {ytId ? (
                 <iframe
                   key={`${ytId}-${audioEnabled}-${isActive}`}
                   src={`https://www.youtube.com/embed/${ytId}?autoplay=${
                     isActive ? 1 : 0
                   }&mute=${audioEnabled ? 0 : 1}&controls=0&playsinline=1`}
-                  className="w-full h-full"
+                  className="w-full h-full pointer-events-none"
                   allow="autoplay; encrypted-media"
                   allowFullScreen
                 />
@@ -121,39 +93,31 @@ export default function ShortsFeed({ shorts }) {
                   muted={!audioEnabled}
                   loop
                   playsInline
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover pointer-events-none"
                 />
               )}
 
-              {/* ---------------- TAP TO UNMUTE ---------------- */}
+              {/* TAP TO UNMUTE (SAFE OVERLAY) */}
               {!audioEnabled && isActive && (
-                <button
-                  onClick={() => setAudioEnabled(true)}
-                  className="absolute inset-0 flex items-center justify-center bg-black/30 text-white text-lg font-semibold z-10"
-                >
-                  🔊 Tap to unmute
-                </button>
+                <div className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none">
+                  <button
+                    onClick={() => setAudioEnabled(true)}
+                    className="pointer-events-auto bg-black/70 text-white px-4 py-2 rounded-full text-sm font-semibold"
+                  >
+                    Tap to unmute
+                  </button>
+                </div>
               )}
 
-              {/* ---------------- WATCH LATER (TOP) ---------------- */}
-              <button
-                onClick={(e) => handleWatchLater(e, short)}
-                className={`
-                  absolute top-4 right-4 z-20
-                  px-3 py-2 rounded-full text-sm font-medium
-                  transition
-                  ${
-                    isSaved
-                      ? "bg-green-600 text-white"
-                      : "bg-black/70 text-white hover:bg-black"
-                  }
-                `}
-              >
-                {isSaved ? "✓ Saved" : "⏰ Watch later"}
-              </button>
+              {/* ACTION BUTTONS */}
+              <div className="absolute right-3 bottom-24 z-50 pointer-events-auto flex flex-col items-center gap-5">
+                <LikeDislikeBar videoId={short.id} layout="vertical" />
+                <WatchLaterButton videoId={short.id} />
+                <SubscribeButton channel={short.channel} />
+              </div>
 
-              {/* ---------------- TEXT OVERLAY ---------------- */}
-              <div className="absolute bottom-6 left-4 right-4 text-white z-20">
+              {/* TEXT */}
+              <div className="absolute bottom-6 left-4 right-4 z-50 text-white">
                 <h3 className="font-semibold text-lg">{short.title}</h3>
                 <p className="text-sm opacity-80">{short.channel}</p>
               </div>

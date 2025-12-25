@@ -1,18 +1,20 @@
-// components/VideoGridClient.js
 "use client";
 
 import { useUIStore } from "@/store/uiStore";
 import VideoCardNew from "@/components/VideoCardNew";
 
-export default function VideoGridClient({ videos }) {
+export default function VideoGridClient({ videos = [] }) {
   const searchTerm = useUIStore((s) => s.searchTerm);
   const selectedCategory = useUIStore((s) => s.selectedCategory);
 
   const filtered = videos.filter((video) => {
+    // ✅ VERY IMPORTANT GUARD
+    if (!video) return false;
+
     const matchesSearch =
       !searchTerm ||
-      video.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      video.channel.toLowerCase().includes(searchTerm.toLowerCase());
+      video.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      video.channel?.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesCategory =
       selectedCategory === "All" ||
