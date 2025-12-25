@@ -129,12 +129,12 @@ async function main() {
     ],
   });
 
-  console.log("✅ Videos restored successfully");
+  console.log("Videos restored successfully");
 }
 
 main()
   .catch((e) => {
-    console.error("❌ Seed failed:", e);
+    console.error(" Seed failed:", e);
     process.exit(1);
   })
   .finally(async () => {

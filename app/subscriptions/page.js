@@ -15,7 +15,7 @@ export default async function SubscriptionsPage() {
     );
   }
 
-  // 1️⃣ Get subscribed channels
+  // Get subscribed channels
   const subs = await prisma.subscription.findMany({
     where: { userId: user.id },
   });
@@ -30,7 +30,7 @@ export default async function SubscriptionsPage() {
     );
   }
 
-  // 2️⃣ Get videos ONLY from subscribed channels (include shorts)
+  //  Get videos ONLY from subscribed channels (include shorts)
   const videos = await prisma.video.findMany({
     where: {
       channel: { in: channels },
@@ -39,7 +39,7 @@ export default async function SubscriptionsPage() {
     orderBy: { createdAt: "desc" },
   });
 
-  // 3️⃣ Group videos by channel
+  //  Group videos by channel
   const grouped = channels.map((channel) => ({
     channel,
     videos: videos.filter((v) => v.channel === channel),

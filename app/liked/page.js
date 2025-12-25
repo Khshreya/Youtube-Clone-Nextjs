@@ -15,7 +15,7 @@ export default async function LikedVideosPage() {
     );
   }
 
-  // 1️⃣ Fetch liked video IDs
+  // Fetch liked video IDs
   const likes = await prisma.like.findMany({
     where: {
       userId: user.id,
@@ -41,7 +41,7 @@ export default async function LikedVideosPage() {
     );
   }
 
-  // 2️⃣ Fetch actual videos
+  // Fetch actual videos
   const videos = await prisma.video.findMany({
     where: {
       id: { in: videoIds },

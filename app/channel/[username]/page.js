@@ -7,7 +7,6 @@ export const dynamic = "force-dynamic";
 export default async function PublicChannelPage({ params }) {
   const username = params?.username;
 
-  // 🚨 VERY IMPORTANT GUARD
   if (!username) {
     notFound();
   }
