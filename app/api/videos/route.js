@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 
-//  ADD THIS (for Vercel preflight)
+//  OPTIONS handler for Vercel preflight
 export async function OPTIONS() {
   return NextResponse.json(
     {},
@@ -15,10 +15,15 @@ export async function OPTIONS() {
   );
 }
 
-// KEEP YOUR POST HANDLER
+//  POST handler
 export async function POST(req) {
   try {
+    //  LOG REQUEST HEADERS (IMPORTANT FOR 413)
+    const contentLength = req.headers.get("content-length");
+    console.log(" Content-Length:", contentLength);
+
     const user = await getCurrentUser();
+    console.log(" User:", user?.id, "Guest:", user?.isGuest);
 
     if (!user || user.isGuest) {
       return NextResponse.json(
@@ -27,7 +32,17 @@ export async function POST(req) {
       );
     }
 
-    const { title, videoUrl, thumbnail, contentType } = await req.json();
+    //  PARSE BODY
+    const body = await req.json();
+    console.log("🧾 Body keys:", Object.keys(body));
+
+    const { title, videoUrl, thumbnail, contentType } = body;
+
+    // 🔍 LOG VALUES (safe ones only)
+    console.log(" title:", title);
+    console.log(" videoUrl length:", videoUrl?.length);
+    console.log(" thumbnail length:", thumbnail?.length);
+    console.log(" contentType:", contentType);
 
     if (!title || !videoUrl || !thumbnail) {
       return NextResponse.json(
@@ -47,9 +62,14 @@ export async function POST(req) {
       },
     });
 
+    console.log("Video saved to DB");
+
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("POST /api/videos error:", err);
+    // VERY IMPORTANT: LOG FULL ERROR
+    console.error(" POST /api/videos FAILED");
+    console.error(err);
+
     return NextResponse.json(
       { error: "Server error" },
       { status: 500 }
