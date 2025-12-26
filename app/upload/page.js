@@ -20,6 +20,60 @@ function Spinner() {
   );
 }
 
+/* ---------------- CLOUDINARY HELPERS (UNSIGNED) ---------------- */
+
+//  CLOUD NAME
+const CLOUD_NAME = "dr0d88x1m";
+
+//  UNSIGNED PRESET NAME
+const UPLOAD_PRESET = "youtube_clone_unsigned";
+
+async function uploadImageToCloudinary(file) {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", UPLOAD_PRESET);
+
+  const res = await fetch(
+    `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+    {
+      method: "POST",
+      body: formData,
+    }
+  );
+
+  if (!res.ok) {
+    const err = await res.text();
+    console.error("Thumbnail error:", err);
+    throw new Error("Thumbnail upload failed");
+  }
+
+  const data = await res.json();
+  return data.secure_url;
+}
+
+async function uploadVideoToCloudinary(file) {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", UPLOAD_PRESET);
+
+  const res = await fetch(
+    `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`,
+    {
+      method: "POST",
+      body: formData,
+    }
+  );
+
+  if (!res.ok) {
+    const err = await res.text();
+    console.error("Video error:", err);
+    throw new Error("Video upload failed");
+  }
+
+  const data = await res.json();
+  return data.secure_url;
+}
+
 /* ---------------- UPLOAD PAGE ---------------- */
 export default function UploadPage() {
   const [title, setTitle] = useState("");
@@ -36,11 +90,12 @@ export default function UploadPage() {
         const res = await fetch("/api/auth/me");
         const data = await res.json();
         const user = data.user;
+
         if (!user) {
-          // not logged in, redirect to login
           window.location.href = "/login";
           return;
         }
+
         if (user.isGuest) {
           setIsGuest(true);
         }
@@ -53,30 +108,46 @@ export default function UploadPage() {
     check();
   }, []);
 
+  /* ---------------- UPLOAD LOGIC ---------------- */
   const uploadVideo = async () => {
     if (!title || !videoFile || !thumbnail) {
       alert("All fields are required");
       return;
     }
 
-    setUploading(true);
+    try {
+      setUploading(true);
 
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("video", videoFile);
-    formData.append("thumbnail", thumbnail);
-    formData.append("contentType", type);
+      // Upload thumbnail
+      const thumbnailUrl = await uploadImageToCloudinary(thumbnail);
 
-    const res = await fetch("/api/upload", {
-      method: "POST",
-      body: formData,
-    });
+      // Upload video
+      const videoUrl = await uploadVideoToCloudinary(videoFile);
 
-    setUploading(false);
+      // Save metadata
+      const res = await fetch("/api/videos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          videoUrl,
+          thumbnail: thumbnailUrl,
+          contentType: type,
+        }),
+      });
 
-    res.ok
-      ? alert("Upload complete ")
-      : alert("Upload failed");
+      if (!res.ok) throw new Error("DB save failed");
+
+      alert("Upload complete ");
+      setTitle("");
+      setVideoFile(null);
+      setThumbnail(null);
+    } catch (err) {
+      console.error(err);
+      alert("Upload failed");
+    } finally {
+      setUploading(false);
+    }
   };
 
   if (authLoading) {
@@ -87,9 +158,22 @@ export default function UploadPage() {
     return (
       <div className="pt-20 flex justify-center px-4">
         <div className="w-full max-w-2xl bg-white rounded-xl shadow p-6 text-center">
-          <h2 className="text-xl font-semibold mb-2">Guests cannot upload videos</h2>
-          <p className="mb-4">Please <a className="text-red-600" href="/login">sign in</a> or register to upload videos.</p>
-          <a className="inline-block bg-red-600 text-white py-2 px-4 rounded" href="/login">Sign in</a>
+          <h2 className="text-xl font-semibold mb-2">
+            Guests cannot upload videos
+          </h2>
+          <p className="mb-4">
+            Please{" "}
+            <a className="text-red-600" href="/login">
+              sign in
+            </a>{" "}
+            or register to upload videos.
+          </p>
+          <a
+            className="inline-block bg-red-600 text-white py-2 px-4 rounded"
+            href="/login"
+          >
+            Sign in
+          </a>
         </div>
       </div>
     );
@@ -98,17 +182,11 @@ export default function UploadPage() {
   return (
     <div className="pt-20 flex justify-center px-4">
       <div className="relative w-full max-w-2xl bg-white rounded-xl shadow p-6">
-        <h1 className="text-2xl font-semibold mb-6">
-          Upload video
-        </h1>
+        <h1 className="text-2xl font-semibold mb-6">Upload video</h1>
 
-        {/* ---------------- DETAILS ---------------- */}
         <div className="space-y-4 mb-6">
-          {/* Content Type */}
           <div>
-            <label className="text-sm font-medium">
-              Content type
-            </label>
+            <label className="text-sm font-medium">Content type</label>
             <select
               className="w-full border rounded-lg px-3 py-2 mt-1"
               value={type}
@@ -119,30 +197,23 @@ export default function UploadPage() {
             </select>
           </div>
 
-          {/* Title */}
           <div>
-            <label className="text-sm font-medium">
-              Title
-            </label>
+            <label className="text-sm font-medium">Title</label>
             <input
               className="w-full border rounded-lg px-3 py-2 mt-1"
               placeholder="Add a title"
+              value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
           </div>
 
-          {/* Thumbnail */}
           <div>
-            <label className="text-sm font-medium">
-              Thumbnail
-            </label>
+            <label className="text-sm font-medium">Thumbnail</label>
             <div className="flex items-center gap-4 mt-2">
               <input
                 type="file"
                 accept="image/*"
-                onChange={(e) =>
-                  setThumbnail(e.target.files[0])
-                }
+                onChange={(e) => setThumbnail(e.target.files[0])}
               />
               {thumbnail && (
                 <img
@@ -155,12 +226,8 @@ export default function UploadPage() {
           </div>
         </div>
 
-        {/* ---------------- VIDEO DROP AREA ---------------- */}
         <div className="border-2 border-dashed rounded-xl p-6 text-center mb-6">
-          <UploadCloud
-            className="mx-auto mb-2 text-gray-500"
-            size={36}
-          />
+          <UploadCloud className="mx-auto mb-2 text-gray-500" size={36} />
           <p className="text-sm text-gray-600 mb-2">
             Drag & drop your video here
           </p>
@@ -170,9 +237,7 @@ export default function UploadPage() {
             accept="video/*"
             className="hidden"
             id="video"
-            onChange={(e) =>
-              setVideoFile(e.target.files[0])
-            }
+            onChange={(e) => setVideoFile(e.target.files[0])}
           />
           <label
             htmlFor="video"
@@ -188,7 +253,6 @@ export default function UploadPage() {
           )}
         </div>
 
-        {/* ---------------- UPLOAD BUTTON ---------------- */}
         <button
           disabled={uploading}
           onClick={uploadVideo}
@@ -201,22 +265,11 @@ export default function UploadPage() {
           {uploading ? "Uploading..." : "Upload"}
         </button>
 
-        {/* ---------------- LOADING OVERLAY ---------------- */}
         {uploading && (
-          <div
-            className="
-              absolute inset-0
-              bg-white/80
-              flex items-center justify-center
-              rounded-xl
-              z-20
-            "
-          >
+          <div className="absolute inset-0 bg-white/80 flex items-center justify-center rounded-xl z-20">
             <div className="flex flex-col items-center gap-3">
               <Spinner />
-              <p className="text-sm text-gray-600">
-                Uploading video…
-              </p>
+              <p className="text-sm text-gray-600">Uploading video…</p>
             </div>
           </div>
         )}
