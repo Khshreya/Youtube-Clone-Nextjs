@@ -35,11 +35,6 @@ export async function POST() {
     return response;
   } catch (error) {
     console.error("Guest login error:", error);
-    // Return dev-only error details to aid debugging (do not reveal in production)
-    if (process.env.NODE_ENV !== "production") {
-      return NextResponse.json({ error: "Something went wrong", details: String(error) }, { status: 500 });
-    }
-
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
   }
 }

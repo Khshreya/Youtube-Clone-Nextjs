@@ -12,6 +12,7 @@ import {
   Music,
   Gamepad2,
   GraduationCap,
+    Upload,
 } from "lucide-react";
 import { useUIStore } from "@/store/uiStore";
 
@@ -23,7 +24,9 @@ export default function Sidebar() {
   const items = [
     { icon: Home, label: "Home", href: "/" },
     { icon: PlaySquare, label: "Shorts", href: "/shorts" },
+    
     { icon: Clapperboard, label: "Subscriptions", href: "/subscriptions" },
+     { icon: Upload, label: "Upload", href: "/upload" },
     { icon: GraduationCap, label: "Your Channel", href: "/channel" },
     { icon: Clock, label: "History", href: "/history" },
     { icon: Clock, label: "Watch Later", href: "/watch-later" },
@@ -31,6 +34,7 @@ export default function Sidebar() {
     { icon: Flame, label: "Trending", href: "/trending" },
     { icon: Music, label: "Music", href: "/music" },
     { icon: Gamepad2, label: "Gaming", href: "/gaming" },
+    
   ];
 
   const NavItem = ({ Icon, label, href }) => (

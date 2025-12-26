@@ -37,7 +37,8 @@ export default async function MyChannelPage() {
           You haven’t uploaded any videos yet.
         </p>
       ) : (
-        <VideoGridClient videos={videos} />
+     <VideoGridClient videos={videos} showDelete />
+
       )}
     </div>
   );

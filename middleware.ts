@@ -23,6 +23,8 @@ export function middleware(request: NextRequest) {
     "/music",
     "/trending",
     "/gaming",
+    "/upload",
+    
   ];
 
   const isProtected = protectedRoutes.some((route) =>
@@ -51,5 +53,6 @@ export const config = {
     "/music/:path*",
     "/trending/:path*",
     "/gaming/:path*",
+     "/upload/:path*",
   ],
 };
