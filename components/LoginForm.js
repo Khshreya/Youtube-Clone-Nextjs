@@ -32,7 +32,24 @@ export default function LoginForm() {
     router.push("/");
     router.refresh();
   };
-
+  const handleGuest = async () => {
+    setError("");
+    setLoading(true);
+    try {
+      const res = await fetch("/api/guest", { method: "POST" });
+      const data = await res.json();
+      setLoading(false);
+      if (!res.ok) {
+        setError(data.error || "Guest login failed");
+        return;
+      }
+      router.push("/");
+      router.refresh();
+    } catch (err) {
+      setLoading(false);
+      setError("Guest login failed");
+    }
+  };
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && <p className="text-red-500 text-sm">{error}</p>}
@@ -58,13 +75,21 @@ export default function LoginForm() {
           className="w-full border rounded px-3 py-2"
         />
       </div>
-
       <button
         type="submit"
         disabled={loading}
         className="w-full bg-blue-600 text-white py-2 rounded"
       >
         {loading ? "Logging in..." : "Login"}
+      </button>
+
+      <button
+        type="button"
+        onClick={handleGuest}
+        disabled={loading}
+        className="w-full mt-2 bg-gray-100 text-black py-2 rounded"
+      >
+        Continue as guest
       </button>
     </form>
   );

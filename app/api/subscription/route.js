@@ -27,6 +27,10 @@ export async function POST(req) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  if (user.isGuest) {
+    return NextResponse.json({ error: "Guests cannot subscribe" }, { status: 403 });
+  }
+
   const { channel } = await req.json();
 
   if (!channel) {
@@ -60,6 +64,10 @@ export async function DELETE(req) {
       { error: "Unauthorized" },
       { status: 401 }
     );
+  }
+
+  if (user.isGuest) {
+    return NextResponse.json({ error: "Guests cannot unsubscribe" }, { status: 403 });
   }
 
   const { channel } = await req.json();

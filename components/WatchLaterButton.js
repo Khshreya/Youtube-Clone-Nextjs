@@ -7,16 +7,25 @@ export default function WatchLaterButton({ videoId }) {
   const [saved, setSaved] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isGuest, setIsGuest] = useState(false);
 
   // Fetch saved status
   useEffect(() => {
     const load = async () => {
-      const res = await fetch(
-        `/api/watch-later/status?videoId=${videoId}`
-      );
-      const data = await res.json();
-      setSaved(data.saved);
-      setLoading(false);
+      try {
+        const [res, meRes] = await Promise.all([
+          fetch(`/api/watch-later/status?videoId=${videoId}`),
+          fetch('/api/auth/me'),
+        ]);
+        const data = await res.json();
+        const me = await meRes.json().catch(() => ({}));
+        setSaved(data.saved);
+        setIsGuest(!!me.user?.isGuest);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
     };
     load();
   }, [videoId]);
@@ -24,6 +33,11 @@ export default function WatchLaterButton({ videoId }) {
   const handleClick = async (e) => {
     e.stopPropagation();
     if (loading || saved) return;
+
+    if (isGuest) {
+      alert("Sign in to save videos");
+      return;
+    }
 
     setSaved(true);
     setJustSaved(true); // trigger green feedback

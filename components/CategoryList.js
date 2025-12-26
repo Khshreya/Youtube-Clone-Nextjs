@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useUIStore } from "@/store/uiStore";
 
 export default function CategoryList() {
   const pathname = usePathname();
+  const router = useRouter();
   const selectedCategory = useUIStore((s) => s.selectedCategory);
   const setSelectedCategory = useUIStore((s) => s.setSelectedCategory);
 
@@ -31,19 +32,32 @@ export default function CategoryList() {
     else if (pathname === "/trending") setSelectedCategory("Trending");
     else setSelectedCategory("All");
   }, [pathname, setSelectedCategory]);
-if (pathname.startsWith("/shorts")) {
-    return null;
-  }
+
+  // Hide on auth pages and shorts
+  if (pathname.startsWith("/shorts")) return null;
+  if (pathname === "/login" || pathname === "/register") return null;
+
+  const displayedCategories = categories;
+
+  const handleClick = (cat) => {
+    if (cat === "All") return router.push("/");
+    if (cat === "Music") return router.push("/music");
+    if (cat === "Gaming") return router.push("/gaming");
+    if (cat === "Trending") return router.push("/trending");
+    if (cat === "Shorts") return router.push("/shorts");
+    setSelectedCategory(cat);
+  };
+
   return (
     <div className="sticky top-14 z-40 bg-white dark:bg-gray-900  pt-2">
       <div className="flex gap-3 px-4 pb-3 overflow-x-auto scrollbar-hide">
-        {categories.map((cat) => {
+        {displayedCategories.map((cat) => {
           const isActive = cat === selectedCategory;
 
           return (
             <button
               key={cat}
-              onClick={() => setSelectedCategory(cat)}
+              onClick={() => handleClick(cat)}
               className={`h-9 px-4 text-sm rounded-lg transition whitespace-nowrap
                 ${
                   isActive

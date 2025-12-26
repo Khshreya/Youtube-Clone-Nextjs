@@ -5,10 +5,14 @@ export function middleware(request: NextRequest) {
   const sessionId = request.cookies.get("session_id")?.value;
   const pathname = request.nextUrl.pathname;
 
-  const authPages =
-    pathname === "/login" || pathname === "/register";
 
-  //  ALL PROTECTED ROUTES
+  if (
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/register")
+  ) {
+    return NextResponse.next();
+  }
+
   const protectedRoutes = [
     "/watch",
     "/subscriptions",
@@ -18,24 +22,16 @@ export function middleware(request: NextRequest) {
     "/shorts",
     "/music",
     "/trending",
-     "/gaming",
+    "/gaming",
   ];
 
   const isProtected = protectedRoutes.some((route) =>
     pathname.startsWith(route)
   );
 
-  //  Not logged in → block protected pages
   if (!sessionId && isProtected) {
     return NextResponse.redirect(
       new URL("/login", request.url)
-    );
-  }
-
-  //  Logged in → block login/register
-  if (sessionId && authPages) {
-    return NextResponse.redirect(
-      new URL("/", request.url)
     );
   }
 
@@ -44,8 +40,8 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/login",
-    "/register",
+    "/login/:path*",
+    "/register/:path*",
     "/watch/:path*",
     "/subscriptions/:path*",
     "/history/:path*",
@@ -54,6 +50,6 @@ export const config = {
     "/shorts/:path*",
     "/music/:path*",
     "/trending/:path*",
-     "/gaming/:path*",
+    "/gaming/:path*",
   ],
 };

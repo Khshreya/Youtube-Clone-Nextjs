@@ -12,6 +12,11 @@ export async function POST(req) {
     );
   }
 
+  // Guests do not get account-based watch history
+  if (user.isGuest) {
+    return NextResponse.json({ success: true });
+  }
+
   const { videoId } = await req.json();
 
   await prisma.history.upsert({

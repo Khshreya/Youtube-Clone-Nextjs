@@ -7,6 +7,7 @@ export default function LikeDislikeBar({ videoId, layout = "horizontal" }) {
   const [reaction, setReaction] = useState(null); // 1, -1, null
   const [likeCount, setLikeCount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [isGuest, setIsGuest] = useState(false);
 
   // Fetch reaction + count on load
   useEffect(() => {
@@ -19,9 +20,27 @@ export default function LikeDislikeBar({ videoId, layout = "horizontal" }) {
     load();
   }, [videoId]);
 
+  // Detect if current user is a guest to block actions client-side
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const res = await fetch("/api/auth/me");
+        const data = await res.json();
+        setIsGuest(!!data.user?.isGuest);
+      } catch (e) {}
+    };
+    loadUser();
+  }, []);
+
   // Handle Like / Dislike click (LOGIC UNCHANGED)
   const handleClick = async (value) => {
     if (loading) return;
+
+    if (isGuest) {
+      alert("Sign in to like videos");
+      return;
+    }
+
     setLoading(true);
 
     let newReaction = reaction;

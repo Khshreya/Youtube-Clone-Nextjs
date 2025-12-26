@@ -44,6 +44,10 @@ export async function POST(req) {
     );
   }
 
+  if (user.isGuest) {
+    return NextResponse.json({ error: "Guests cannot like videos" }, { status: 403 });
+  }
+
   const { videoId, value } = await req.json();
 
   // If value is null → remove reaction

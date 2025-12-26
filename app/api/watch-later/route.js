@@ -8,6 +8,10 @@ export async function POST(req) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  if (user.isGuest) {
+    return NextResponse.json({ error: "Guests cannot save videos" }, { status: 403 });
+  }
+
   const { videoId } = await req.json();
 
   await prisma.watchLater.upsert({
