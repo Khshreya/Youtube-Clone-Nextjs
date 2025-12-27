@@ -11,7 +11,7 @@ export default function MobileSearchBar() {
   const setSearchTerm = useUIStore((s) => s.setSearchTerm);
 
   //  CONDITIONAL RENDER AFTER HOOKS
-  if (pathname.startsWith("/upload"&&"/settings")) return null;
+  if (pathname.startsWith("/upload"&&"/settings"&&"/details")) return null;
 
   return (
     <div className="sm:hidden px-3 pt-2 pb-3 border-b bg-white dark:bg-gray-900 dark:border-gray-700">

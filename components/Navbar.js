@@ -63,7 +63,7 @@ export default function Navbar() {
         </div>
 
         {/* SEARCH (HIDDEN ON UPLOAD) */}
-        {!pathname.startsWith("/upload"&& "/settings") && (
+        {!pathname.startsWith("/upload"&& "/settings"&&"/details") && (
           <div className="hidden sm:flex flex-1 max-w-md mx-4">
             <input
               type="text"
