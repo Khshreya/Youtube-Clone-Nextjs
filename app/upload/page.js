@@ -52,27 +52,49 @@ async function uploadImageToCloudinary(file) {
 }
 
 async function uploadVideoToCloudinary(file) {
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("upload_preset", UPLOAD_PRESET);
+  const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB
+  const totalSize = file.size;
+  const uploadId = crypto.randomUUID();
 
-  const res = await fetch(
-    `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`,
-    {
-      method: "POST",
-      body: formData,
+  let uploadedBytes = 0;
+  let lastResponse = null;
+
+  while (uploadedBytes < totalSize) {
+    const chunk = file.slice(
+      uploadedBytes,
+      uploadedBytes + CHUNK_SIZE
+    );
+
+    const formData = new FormData();
+    formData.append("file", chunk);
+    formData.append("upload_preset", UPLOAD_PRESET);
+
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Range": `bytes ${uploadedBytes}-${uploadedBytes + chunk.size - 1}/${totalSize}`,
+          "X-Unique-Upload-Id": uploadId,
+        },
+        body: formData,
+      }
+    );
+
+    if (!res.ok) {
+      const err = await res.text();
+      console.error("Chunk upload failed:", err);
+      throw new Error("Chunk upload failed");
     }
-  );
 
-  if (!res.ok) {
-    const err = await res.text();
-    console.error("Video error:", err);
-    throw new Error("Video upload failed");
+    lastResponse = await res.json();
+    uploadedBytes += chunk.size;
   }
 
-  const data = await res.json();
-  return data.secure_url;
+  // Final Cloudinary response contains the URL
+  return lastResponse.secure_url;
 }
+
 
 /* ---------------- UPLOAD PAGE ---------------- */
 export default function UploadPage() {
