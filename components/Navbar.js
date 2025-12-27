@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { useUIStore } from "@/store/uiStore";
 
 export default function Navbar() {
   const router = useRouter();
+  const pathname = usePathname(); // ✅ ADD THIS
 
   const toggleCollapseSidebar = useUIStore((s) => s.toggleCollapseSidebar);
   const toggleMobileSidebar = useUIStore((s) => s.toggleMobileSidebar);
@@ -27,7 +28,6 @@ export default function Navbar() {
         setUser(null);
       }
     };
-
     fetchUser();
   }, []);
 
@@ -60,16 +60,18 @@ export default function Navbar() {
           <h1 className="text-lg font-semibold">CnTube</h1>
         </div>
 
-        {/* SEARCH */}
-        <div className="hidden sm:flex flex-1 max-w-md mx-4">
-          <input
-            type="text"
-            placeholder="Search"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-2 rounded-full bg-gray-100 dark:bg-gray-800 outline-none"
-          />
-        </div>
+        {/* SEARCH (HIDDEN ON UPLOAD) */}
+        {!pathname.startsWith("/upload") && (
+          <div className="hidden sm:flex flex-1 max-w-md mx-4">
+            <input
+              type="text"
+              placeholder="Search"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-4 py-2 rounded-full bg-gray-100 dark:bg-gray-800 outline-none"
+            />
+          </div>
+        )}
 
         {/* RIGHT */}
         <div className="flex items-center gap-3">
@@ -82,16 +84,10 @@ export default function Navbar() {
 
           {!user && (
             <>
-              <Link
-                href="/login"
-                className="text-sm px-3 py-1 border rounded"
-              >
+              <Link href="/login" className="text-sm px-3 py-1 border rounded">
                 Login
               </Link>
-              <Link
-                href="/register"
-                className="text-sm px-3 py-1 border rounded"
-              >
+              <Link href="/register" className="text-sm px-3 py-1 border rounded">
                 Register
               </Link>
             </>

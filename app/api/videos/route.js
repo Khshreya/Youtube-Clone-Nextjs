@@ -36,7 +36,8 @@ export async function POST(req) {
     const body = await req.json();
     console.log("🧾 Body keys:", Object.keys(body));
 
-    const { title, videoUrl, thumbnail, contentType } = body;
+   const { title, videoUrl, thumbnail, contentType, editMetadata } = body;
+
 
     // 🔍 LOG VALUES (safe ones only)
     console.log(" title:", title);
@@ -59,6 +60,7 @@ export async function POST(req) {
         duration: "0:00",
         channel: user.name,
         contentType,
+        editMetadata,
       },
     });
 

@@ -47,7 +47,9 @@ export default function CategoryList() {
     if (cat === "Shorts") return router.push("/shorts");
     setSelectedCategory(cat);
   };
-
+if (pathname.startsWith("/shorts")) return null;
+  if (pathname === "/login" || pathname === "/register") return null;
+  if (pathname.startsWith("/upload")) return null; 
   return (
     <div className="sticky top-14 z-40 bg-white dark:bg-gray-900  pt-2">
       <div className="flex gap-3 px-4 pb-3 overflow-x-auto scrollbar-hide">

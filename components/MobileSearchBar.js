@@ -1,10 +1,17 @@
 "use client";
 
 import { useUIStore } from "@/store/uiStore";
+import { usePathname } from "next/navigation";
 
 export default function MobileSearchBar() {
+  const pathname = usePathname();
+
+  // ✅ HOOKS MUST BE CALLED FIRST
   const searchTerm = useUIStore((s) => s.searchTerm);
   const setSearchTerm = useUIStore((s) => s.setSearchTerm);
+
+  // ✅ CONDITIONAL RENDER AFTER HOOKS
+  if (pathname.startsWith("/upload")) return null;
 
   return (
     <div className="sm:hidden px-3 pt-2 pb-3 border-b bg-white dark:bg-gray-900 dark:border-gray-700">
