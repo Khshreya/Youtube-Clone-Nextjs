@@ -7,13 +7,15 @@ import {
   Clapperboard,
   Clock,
   ThumbsUp,
-
   Flame,
   Music,
   Gamepad2,
   GraduationCap,
-    Upload,
+  PlusSquare,
+  History,
+  Settings,
 } from "lucide-react";
+
 import { useUIStore } from "@/store/uiStore";
 
 export default function Sidebar() {
@@ -21,21 +23,27 @@ export default function Sidebar() {
   const mobileSidebarOpen = useUIStore((s) => s.mobileSidebarOpen);
   const toggleMobileSidebar = useUIStore((s) => s.toggleMobileSidebar);
 
-  const items = [
-    { icon: Home, label: "Home", href: "/" },
-    { icon: PlaySquare, label: "Shorts", href: "/shorts" },
-    
-    { icon: Clapperboard, label: "Subscriptions", href: "/subscriptions" },
-     { icon: Upload, label: "Upload", href: "/upload" },
-    { icon: GraduationCap, label: "Your Channel", href: "/channel" },
-    { icon: Clock, label: "History", href: "/history" },
-    { icon: Clock, label: "Watch Later", href: "/watch-later" },
-    { icon: ThumbsUp, label: "Liked Videos", href: "/liked" },
-    { icon: Flame, label: "Trending", href: "/trending" },
-    { icon: Music, label: "Music", href: "/music" },
-    { icon: Gamepad2, label: "Gaming", href: "/gaming" },
-    
-  ];
+ const items = [
+  { icon: Home, label: "Home", href: "/" },
+  { icon: PlaySquare, label: "Shorts", href: "/shorts" },
+  { icon: Clapperboard, label: "Subscriptions", href: "/subscriptions" },
+
+  { icon: PlusSquare, label: "Upload", href: "/upload" },
+
+  { icon: GraduationCap, label: "Your Channel", href: "/channel" },
+
+ 
+  { icon: History, label: "History", href: "/history" },
+  { icon: Clock, label: "Watch Later", href: "/watch-later" },
+
+  { icon: ThumbsUp, label: "Liked Videos", href: "/liked" },
+  { icon: Flame, label: "Trending", href: "/trending" },
+  { icon: Music, label: "Music", href: "/music" },
+  { icon: Gamepad2, label: "Gaming", href: "/gaming" },
+  { icon: Settings, label: "Settings", href: "/settings" },
+
+];
+
 
   const NavItem = ({ Icon, label, href }) => (
     <Link

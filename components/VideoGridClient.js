@@ -16,18 +16,27 @@ export default function VideoGridClient({
 
   const [openMenu, setOpenMenu] = useState(null);
 
+  // DELETE VIDEO (MOBILE SAFE)
   const deleteVideo = async (videoId) => {
     const ok = confirm("Are you sure you want to delete this video?");
     if (!ok) return;
 
-    await fetch(`/api/video/delete?videoId=${videoId}`, {
-      method: "DELETE",
-    });
+    try {
+      await fetch(`/api/video/delete?videoId=${videoId}`, {
+        method: "DELETE",
+      });
 
-    setOpenMenu(null);
-    router.refresh();
+      setOpenMenu(null);
+
+    
+      router.replace("/channel");
+      router.refresh();
+    } catch (err) {
+      console.error("Delete failed", err);
+    }
   };
 
+  //  FILTER LOGIC
   const filtered = videos.filter((video) => {
     if (!video) return false;
 
@@ -63,28 +72,45 @@ export default function VideoGridClient({
             {showDelete && (
               <div className="absolute top-2 right-2 z-20">
                 <button
-                  onClick={() =>
+                  onClick={(e) => {
+                    e.stopPropagation();
                     setOpenMenu(
                       openMenu === video.id ? null : video.id
-                    )
-                  }
+                    );
+                  }}
                   className="
-                    p-1 rounded-full
-                    bg-black/60 text-white
+                    p-1.5 rounded-full
+                    bg-black/50 text-white
                     opacity-0 group-hover:opacity-100
                     transition
+                    hover:bg-black/70
                   "
                 >
                   <MoreVertical size={18} />
                 </button>
 
                 {openMenu === video.id && (
-                  <div className="absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-lg border text-sm">
+                  <div
+                    className="
+                      absolute right-0 mt-2 w-44
+                      bg-white dark:bg-gray-800
+                      rounded-xl shadow-xl
+                      border dark:border-gray-700
+                      overflow-hidden
+                    "
+                  >
                     <button
-                      onClick={() => deleteVideo(video.id)}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteVideo(video.id);
+                      }}
+                      className="
+                        w-full flex items-center gap-2
+                        px-4 py-3 text-sm text-red-600
+                        hover:bg-gray-100 dark:hover:bg-gray-700
+                      "
                     >
-                      Delete
+                      🗑 Delete video
                     </button>
                   </div>
                 )}

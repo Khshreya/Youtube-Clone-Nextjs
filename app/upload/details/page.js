@@ -124,40 +124,42 @@ export default function UploadDetailsPage() {
           )}
         </div>
 
-        <div>
-          <label className="text-sm font-medium">Caption *</label>
-          <input
-  className="
-    w-full mt-1 px-4 py-2 rounded-lg
-    bg-white dark:bg-gray-800
-    text-gray-900 dark:text-white
-    placeholder-gray-400 dark:placeholder-gray-500
-    border border-gray-300 dark:border-gray-600
-    focus:outline-none focus:ring-2 focus:ring-red-500
-  "
-  value={title}
-  onChange={(e) => setTitle(e.target.value)}
-  placeholder="Write a caption"
-/>
+  <div className="mt-6">
+  {/* Caption */}
+  <label className="text-sm font-medium">Caption *</label>
+  <input
+    className="
+      w-full mt-1 px-4 py-2 rounded-lg
+      bg-white dark:bg-gray-800
+      text-gray-900 dark:text-white
+      placeholder-gray-400 dark:placeholder-gray-500
+      border border-gray-300 dark:border-gray-600
+      focus:outline-none focus:ring-2 focus:ring-red-500
+    "
+    value={title}
+    onChange={(e) => setTitle(e.target.value)}
+    placeholder="Write a caption"
+  />
 
-        </div>
-
-       <div className="flex justify-end pt-4">
-  <button
-    disabled={uploading}
-    onClick={publish}
-    className={`
-      px-6 py-2 rounded-lg text-sm font-medium transition-all
-      ${
-        uploading
-          ? "bg-gray-400 dark:bg-gray-600 text-gray-700 cursor-not-allowed"
-          : "bg-red-600 hover:bg-red-700 text-white shadow-md hover:shadow-lg"
-      }
-    `}
-  >
-    {uploading ? "Publishing..." : "Publish"}
-  </button>
+  {/* Button */}
+  <div className="flex justify-end mt-4">
+    <button
+      disabled={uploading}
+      onClick={publish}
+      className={`
+        px-6 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap
+        ${
+          uploading
+            ? "bg-gray-400 dark:bg-gray-600 text-gray-700 cursor-not-allowed"
+            : "bg-red-600 hover:bg-red-700 text-white shadow-md hover:shadow-lg"
+        }
+      `}
+    >
+      {uploading ? "Publishing..." : "Publish"}
+    </button>
+  </div>
 </div>
+
 
       </div>
     </div>

@@ -23,7 +23,7 @@ export default function VideoCardNew({ video }) {
       ? `/shorts?video=${video.id}`
       : `/watch/${video.id}`;
 
-  // ▶ Open video
+  // Open video
   const handleClick = async () => {
     try {
       await fetch("/api/history", {
