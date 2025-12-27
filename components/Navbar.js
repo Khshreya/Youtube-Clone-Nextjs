@@ -7,9 +7,8 @@ import { useUIStore } from "@/store/uiStore";
 
 export default function Navbar() {
   const router = useRouter();
-  const pathname = usePathname(); 
+  const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
-
 
   const toggleCollapseSidebar = useUIStore((s) => s.toggleCollapseSidebar);
   const toggleMobileSidebar = useUIStore((s) => s.toggleMobileSidebar);
@@ -40,6 +39,13 @@ export default function Navbar() {
     router.refresh();
   };
 
+  /* ✅ CORRECT SEARCH HIDE LOGIC */
+  const hideSearch =
+    pathname.startsWith("/upload") ||
+    pathname.startsWith("/settings") ||
+    pathname.startsWith("/details") ||
+    pathname.startsWith("/shorts");
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-900">
       <div className="flex items-center justify-between px-4 py-2">
@@ -62,8 +68,8 @@ export default function Navbar() {
           <h1 className="text-lg font-semibold">CnTube</h1>
         </div>
 
-        {/* SEARCH (HIDDEN ON UPLOAD) */}
-        {!pathname.startsWith("/upload"&& "/settings"&&"/details") && (
+        {/* SEARCH */}
+        {!hideSearch && (
           <div className="hidden sm:flex flex-1 max-w-md mx-4">
             <input
               type="text"
@@ -75,107 +81,90 @@ export default function Navbar() {
           </div>
         )}
 
-{/* RIGHT */}
-<div className="flex items-center gap-3">
-  {/* Create / Upload */}
-  <button
-    onClick={() => router.push("/upload")}
-    className="flex items-center gap-2 px-4 py-2 rounded-full
-               bg-gray-100 dark:bg-gray-800
-               hover:bg-gray-200 dark:hover:bg-gray-700
-               text-sm font-medium"
-  >
-    <span className="text-lg">+</span>
-    Create
-  </button>
+        {/* RIGHT */}
+        <div className="flex items-center gap-3">
+          {/* Create */}
+          <button
+            onClick={() => router.push("/upload")}
+            className="flex items-center gap-2 px-4 py-2 rounded-full
+                       bg-gray-100 dark:bg-gray-800
+                       hover:bg-gray-200 dark:hover:bg-gray-700
+                       text-sm font-medium"
+          >
+            <span className="text-lg">+</span>
+            Create
+          </button>
 
-  {/* Theme toggle */}
-  <button
-    onClick={toggleDarkMode}
-    className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
-    title="Toggle theme"
-  >
-    {darkMode ? "☀️" : "🌙"}
-  </button>
+          {/* Theme */}
+          <button
+            onClick={toggleDarkMode}
+            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+            title="Toggle theme"
+          >
+            {darkMode ? "☀️" : "🌙"}
+          </button>
 
-  {/* Avatar + dropdown */}
-  {user && (
-<div className="relative">
-  {/* Avatar */}
-  <button
-    onClick={() => setMenuOpen((prev) => !prev)}
-    className="w-9 h-9 rounded-full overflow-hidden border
-               bg-red-600 text-white font-semibold
-               flex items-center justify-center"
-  >
-    {user.name?.charAt(0).toUpperCase()}
-  </button>
+          {/* Avatar */}
+          {user && (
+            <div className="relative">
+              <button
+                onClick={() => setMenuOpen((p) => !p)}
+                className="w-9 h-9 rounded-full border
+                           bg-red-600 text-white font-semibold
+                           flex items-center justify-center"
+              >
+                {user.name?.charAt(0).toUpperCase()}
+              </button>
 
-  {/* Dropdown */}
-  {menuOpen && (
-    <div
-      className="
-        absolute right-0 mt-2 w-48
-        bg-white dark:bg-gray-800
-        rounded-xl shadow-lg
-        border dark:border-gray-700
-        z-50
-      "
-    >
-      {/* Channel name */}
-      <div className="px-4 py-3">
-        <p className="text-sm font-semibold">
-          {user.name}
-        </p>
-        <p className="text-xs text-gray-500">
-          Your channel
-        </p>
-      </div>
+              {menuOpen && (
+                <div className="absolute right-0 mt-2 w-48
+                                bg-white dark:bg-gray-800
+                                rounded-xl shadow-lg
+                                border dark:border-gray-700 z-50">
+                  <div className="px-4 py-3">
+                    <p className="text-sm font-semibold">{user.name}</p>
+                    <p className="text-xs text-gray-500">Your channel</p>
+                  </div>
 
-      <div className="h-px bg-gray-200 dark:bg-gray-700" />
+                  <div className="h-px bg-gray-200 dark:bg-gray-700" />
 
-      {/* Settings */}
-      <button
-        onClick={() => {
-          setMenuOpen(false);
-          router.push("/settings");
-        }}
-        className="w-full text-left px-4 py-2.5 text-sm
-                   hover:bg-gray-100 dark:hover:bg-gray-700"
-      >
-        Settings
-      </button>
+                  <button
+                    onClick={() => {
+                      setMenuOpen(false);
+                      router.push("/settings");
+                    }}
+                    className="w-full text-left px-4 py-2.5 text-sm
+                               hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >
+                    Settings
+                  </button>
 
-      <div className="h-px bg-gray-200 dark:bg-gray-700" />
+                  <div className="h-px bg-gray-200 dark:bg-gray-700" />
 
-      {/* Logout */}
-      <button
-        onClick={() => {
-          setMenuOpen(false);
-          handleLogout();
-        }}
-        className="w-full text-left px-4 py-2.5 text-sm text-red-600
-                   hover:bg-gray-100 dark:hover:bg-gray-700"
-      >
-        Logout
-      </button>
-    </div>
-  )}
-</div>
+                  <button
+                    onClick={() => {
+                      setMenuOpen(false);
+                      handleLogout();
+                    }}
+                    className="w-full text-left px-4 py-2.5 text-sm text-red-600
+                               hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
 
-
-  )}
-
-  {!user && (
-    <Link
-      href="/login"
-      className="text-sm px-3 py-1 border rounded"
-    >
-      Login
-    </Link>
-  )}
-</div>
-
+          {!user && (
+            <Link
+              href="/login"
+              className="text-sm px-3 py-1 border rounded"
+            >
+              Login
+            </Link>
+          )}
+        </div>
       </div>
     </nav>
   );

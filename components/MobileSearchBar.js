@@ -6,15 +6,23 @@ import { usePathname } from "next/navigation";
 export default function MobileSearchBar() {
   const pathname = usePathname();
 
-  //  HOOKS MUST BE CALLED FIRST
+  // ✅ hooks first
   const searchTerm = useUIStore((s) => s.searchTerm);
   const setSearchTerm = useUIStore((s) => s.setSearchTerm);
 
-  //  CONDITIONAL RENDER AFTER HOOKS
-  if (pathname.startsWith("/upload"&&"/settings"&&"/details")) return null;
+  // ✅ correct hide logic
+  const hideSearch =
+    pathname.startsWith("/upload") ||
+    pathname.startsWith("/settings") ||
+    pathname.startsWith("/details") ||
+    pathname.startsWith("/shorts");
+
+  if (hideSearch) return null;
 
   return (
-    <div className="sm:hidden px-3 pt-2 pb-3 border-b bg-white dark:bg-gray-900 dark:border-gray-700">
+    <div className="sm:hidden px-3 pt-2 pb-3 border-b
+                    bg-white dark:bg-gray-900
+                    dark:border-gray-700">
       <input
         type="text"
         placeholder="Search…"

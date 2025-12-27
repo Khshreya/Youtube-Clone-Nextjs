@@ -96,7 +96,7 @@ export default function UploadDetailsPage() {
   }
 
   return (
-    <div className="pt-20 min-h-screen bg-gray-100 dark:bg-[#0f172a]">
+    <div className="pt-20 min-h-screen  bg-white dark:bg-[#0f172a]">
       <div className="max-w-xl mx-auto space-y-6 px-4">
 
         <button
@@ -118,7 +118,7 @@ export default function UploadDetailsPage() {
           />
 
           {meta?.filter && (
-            <div className="text-xs bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full w-fit">
+            <div className="text-xs  bg-white dark:bg-gray-800 px-3 py-1 rounded-full w-fit">
               Filter: <span className="font-medium">{meta.filter.name}</span>
             </div>
           )}
