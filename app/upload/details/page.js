@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Eye, Type, UploadCloud } from "lucide-react";
 
 const CLOUD_NAME = "dr0d88x1m";
 const UPLOAD_PRESET = "youtube_clone_unsigned";
 
+/* ---------------- CLOUDINARY ---------------- */
 async function uploadImageToCloudinary(file) {
   const formData = new FormData();
   formData.append("file", file);
@@ -34,6 +35,7 @@ async function uploadVideoToCloudinary(file) {
   return (await res.json()).secure_url;
 }
 
+/* ---------------- PAGE ---------------- */
 export default function UploadDetailsPage() {
   const [title, setTitle] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -81,10 +83,10 @@ export default function UploadDetailsPage() {
 
       delete window.__uploadData;
       sessionStorage.removeItem("uploadMeta");
-      alert("Video published successfully ");
+      alert("Video published successfully");
 
       window.location.href = "/";
-    } catch (err) {
+    } catch {
       alert("Publish failed");
     } finally {
       setUploading(false);
@@ -92,75 +94,96 @@ export default function UploadDetailsPage() {
   };
 
   if (!videoPreviewUrl) {
-    return <div className="pt-20 text-center">Loading…</div>;
+    return <div className="pt-28 text-center text-gray-500">Loading…</div>;
   }
 
   return (
-    <div className="pt-20 min-h-screen  bg-white dark:bg-[#0f172a]">
-      <div className="max-w-xl mx-auto space-y-6 px-4">
+    <div className="pt-24 min-h-screen bg-gray-100 dark:bg-gray-900 px-4">
+      <div className="mx-auto max-w-3xl">
 
-        <button
-          onClick={() => (window.location.href = "/upload")}
-          className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back
-        </button>
-
-        <h1 className="text-2xl font-semibold">Preview</h1>
-
-        <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 shadow-xl space-y-3">
-          <video
-            src={videoPreviewUrl}
-            controls
-            className="w-full rounded-xl"
-            style={{ filter: meta?.filter?.css || "none" }}
-          />
-
-          {meta?.filter && (
-            <div className="text-xs  bg-white dark:bg-gray-800 px-3 py-1 rounded-full w-fit">
-              Filter: <span className="font-medium">{meta.filter.name}</span>
-            </div>
-          )}
+        {/* HEADER */}
+        <div className="flex items-center gap-3 mb-6">
+          <button
+            onClick={() => (window.location.href = "/upload")}
+            className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800"
+          >
+            <ArrowLeft size={18} />
+          </button>
+          <h1 className="text-xl font-semibold">Review & publish</h1>
         </div>
 
-  <div className="mt-6">
-  {/* Caption */}
-  <label className="text-sm font-medium">Caption *</label>
-  <input
-    className="
-      w-full mt-1 px-4 py-2 rounded-lg
-      bg-white dark:bg-gray-800
-      text-gray-900 dark:text-white
-      placeholder-gray-400 dark:placeholder-gray-500
-      border border-gray-300 dark:border-gray-600
-      focus:outline-none focus:ring-2 focus:ring-red-500
-    "
-    value={title}
-    onChange={(e) => setTitle(e.target.value)}
-    placeholder="Write a caption"
-  />
+        {/* MAIN CARD */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 space-y-8">
 
-  {/* Button */}
-  <div className="flex justify-end mt-4">
-    <button
-      disabled={uploading}
-      onClick={publish}
-      className={`
-        px-6 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap
-        ${
-          uploading
-            ? "bg-gray-400 dark:bg-gray-600 text-gray-700 cursor-not-allowed"
-            : "bg-red-600 hover:bg-red-700 text-white shadow-md hover:shadow-lg"
-        }
-      `}
-    >
-      {uploading ? "Publishing..." : "Publish"}
-    </button>
-  </div>
-</div>
+          {/* VIDEO PREVIEW */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <Eye size={18} />
+              <p className="font-medium">Preview</p>
+            </div>
 
+            <div className="rounded-xl overflow-hidden bg-black">
+              <video
+                src={videoPreviewUrl}
+                controls
+                className="w-full"
+                style={{ filter: meta?.filter?.css || "none" }}
+              />
+            </div>
 
+            {meta?.filter && (
+              <div className="mt-3 inline-flex items-center gap-2
+                              text-xs bg-gray-100 dark:bg-gray-700
+                              px-3 py-1 rounded-full">
+                Visual style:
+                <span className="font-medium">{meta.filter.name}</span>
+              </div>
+            )}
+          </div>
+
+          {/* CAPTION */}
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <Type size={18} />
+              <label className="text-sm font-medium">
+                Caption
+              </label>
+            </div>
+
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Write a caption for your video"
+              className="
+                w-full px-4 py-2.5 rounded-lg
+                bg-white dark:bg-gray-700
+                text-gray-900 dark:text-white
+                border border-gray-300 dark:border-gray-600
+                focus:outline-none focus:ring-2 focus:ring-red-500
+              "
+            />
+          </div>
+
+          {/* ACTION */}
+          <div className="flex justify-end">
+            <button
+              disabled={uploading}
+              onClick={publish}
+              className={`
+                flex items-center gap-2
+                px-7 py-2.5 rounded-full text-sm font-medium transition
+                ${
+                  uploading
+                    ? "bg-gray-400 dark:bg-gray-600 text-gray-700 cursor-not-allowed"
+                    : "bg-red-600 hover:bg-red-700 text-white shadow-md"
+                }
+              `}
+            >
+              <UploadCloud size={16} />
+              {uploading ? "Publishing…" : "Publish"}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

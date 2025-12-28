@@ -2,6 +2,12 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import {
+  Video,
+  Zap,
+  UploadCloud,
+  Image as ImageIcon,
+} from "lucide-react";
 import VideoThumbnailPicker from "@/components/VideoThumbnailPicker";
 
 /* ---------------- SPINNER ---------------- */
@@ -82,20 +88,20 @@ export default function UploadPage() {
   }, [videoFile, thumbnail, type, selectedFilter, router]);
 
   if (authLoading) {
-    return <div className="pt-24 text-center">Loading…</div>;
+    return <div className="pt-28 text-center text-gray-500">Loading…</div>;
   }
 
   if (isGuest) {
     return (
-      <div className="pt-24 text-center text-gray-500">
+      <div className="pt-28 text-center text-gray-500">
         Guests cannot upload videos.
       </div>
     );
   }
 
   return (
-    <div className="pt-24 min-h-screen bg-white dark:bg-gray-900 px-4">
-      <div className="mx-auto w-full max-w-2xl bg-white dark:bg-gray-900">
+    <div className="pt-24 min-h-screen bg-gray-100 dark:bg-gray-900 px-4">
+      <div className="mx-auto max-w-3xl">
 
         {/* FILE INPUT */}
         <input
@@ -109,98 +115,93 @@ export default function UploadPage() {
           }}
         />
 
-        <h1 className="text-2xl font-semibold mb-6">
-          Upload video
-        </h1>
+        {/* MAIN CARD */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
 
-        {/* STEP 1 */}
-        <div className="border rounded-xl p-5 mb-6
-                        border-gray-200 dark:border-gray-700">
-          <h2 className="font-semibold mb-4">
-            Step 1 · Choose content type
-          </h2>
+          {/* HEADER */}
+          <div className="flex items-center gap-3 mb-8">
+            <UploadCloud className="text-red-600" />
+            <h1 className="text-xl font-semibold">Upload video</h1>
+          </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          {/* CONTENT TYPE */}
+          <div className="grid grid-cols-2 gap-4 mb-8">
             <button
               onClick={() => pickVideo("video")}
-              className={`p-4 rounded-xl border text-left flex gap-3
+              className={`flex items-center gap-4 p-4 rounded-xl border transition
                 ${
                   type === "video"
                     ? "border-red-600 bg-red-50 dark:bg-red-900/20"
-                    : "border-gray-300 dark:border-gray-700"
+                    : "border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
                 }`}
             >
-              <span className="text-xl">🎬</span>
+              <Video />
               <div>
-                <p className="font-semibold">Video</p>
-                <p className="text-xs text-gray-500">
-                  Long-form horizontal videos
-                </p>
+                <p className="font-medium">Video</p>
+                <p className="text-xs text-gray-500">Long-form content</p>
               </div>
             </button>
 
             <button
               onClick={() => pickVideo("short")}
-              className={`p-4 rounded-xl border text-left flex gap-3
+              className={`flex items-center gap-4 p-4 rounded-xl border transition
                 ${
                   type === "short"
                     ? "border-red-600 bg-red-50 dark:bg-red-900/20"
-                    : "border-gray-300 dark:border-gray-700"
+                    : "border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
                 }`}
             >
-              <span className="text-xl">⚡</span>
+              <Zap />
               <div>
-                <p className="font-semibold">Short</p>
-                <p className="text-xs text-gray-500">
-                  Vertical videos under 60s
-                </p>
+                <p className="font-medium">Short</p>
+                <p className="text-xs text-gray-500">Vertical, under 60s</p>
               </div>
             </button>
           </div>
+
+          {/* EMPTY STATE */}
+          {!videoFile && (
+            <div className="border border-dashed rounded-xl p-10 text-center text-gray-400 dark:border-gray-700">
+              Select a video file to continue
+            </div>
+          )}
+
+          {/* THUMBNAIL PICKER */}
+          {videoFile && (
+            <div className="mt-6">
+              <div className="flex items-center gap-2 mb-4">
+                <ImageIcon size={18} />
+                <p className="font-medium">Visual style
+</p>
+              </div>
+
+              <VideoThumbnailPicker
+                key={videoFile.name}
+                videoFile={videoFile}
+                selectedFilter={selectedFilter}
+                onFilterChange={setSelectedFilter}
+                onSelect={setThumbnail}
+              />
+            </div>
+          )}
+
+          {/* ACTION */}
+          {videoFile && thumbnail && (
+            <div className="flex justify-end mt-8">
+              <button
+                onClick={goToDetails}
+                className="px-8 py-2.5 rounded-full text-sm font-medium
+                           bg-red-600 hover:bg-red-700 text-white transition"
+              >
+                Continue
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* STEP 2 */}
-        {!videoFile && (
-          <div className="border border-dashed rounded-xl
-                          p-10 text-center text-gray-400
-                          border-gray-300 dark:border-gray-700">
-            Select a video file to continue
-          </div>
-        )}
-
-        {videoFile && (
-          <div className="border rounded-xl p-5 mb-6
-                          border-gray-200 dark:border-gray-700">
-            <h2 className="font-semibold mb-4">
-              Step 2 · Choose thumbnail
-            </h2>
-
-            <VideoThumbnailPicker
-              key={videoFile.name}
-              videoFile={videoFile}
-              selectedFilter={selectedFilter}
-              onFilterChange={setSelectedFilter}
-              onSelect={setThumbnail}
-            />
-          </div>
-        )}
-
-        {/* STEP 3 */}
-        {videoFile && thumbnail && (
-          <div className="flex justify-end">
-            <button
-              onClick={goToDetails}
-              className="px-6 py-2 rounded-lg text-sm font-medium
-                         bg-red-600 hover:bg-red-700 text-white"
-            >
-              Next →
-            </button>
-          </div>
-        )}
-
+        {/* UPLOADING OVERLAY */}
         {uploading && (
-          <div className="fixed inset-0 bg-white/70 dark:bg-black/60
-                          flex items-center justify-center">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <Spinner />
           </div>
         )}
