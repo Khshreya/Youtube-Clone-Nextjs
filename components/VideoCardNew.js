@@ -82,9 +82,10 @@ export default function VideoCardNew({ video }) {
         )}
 
         {/* Duration badge */}
-        <span className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-2 py-0.5 rounded">
-          {video.duration || "12:34"}
-        </span>
+      <span className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-2 py-0.5 rounded">
+  {video.duration}
+</span>
+
       </div>
 
       {/* TEXT */}

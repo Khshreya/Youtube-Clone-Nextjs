@@ -37,16 +37,19 @@ export async function POST(req) {
     ).end(videoBuffer);
   });
 
-  await prisma.video.create({
-    data: {
-      title,
-      videoUrl: videoUpload.secure_url,
-      thumbnail: thumbUpload.secure_url,
-      duration: "0:00",
-      channel: user.name,
-      contentType,
-    },
-  });
+const body = await req.json();
+
+await prisma.video.create({
+  data: {
+    title: body.title,
+    videoUrl: body.videoUrl,
+    thumbnail: body.thumbnail,
+    duration: body.duration || "0:00", // ✅ FIX
+    channel: user.name,
+    contentType: body.contentType,
+    editMetadata: body.editMetadata,
+  },
+});
 
   return NextResponse.json({ success: true });
 }

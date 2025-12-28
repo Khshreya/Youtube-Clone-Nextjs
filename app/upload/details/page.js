@@ -35,6 +35,23 @@ async function uploadVideoToCloudinary(file) {
   return (await res.json()).secure_url;
 }
 
+/* ---------------- DURATION ---------------- */
+const getVideoDuration = (file) =>
+  new Promise((resolve) => {
+    const video = document.createElement("video");
+    video.preload = "metadata";
+
+    video.onloadedmetadata = () => {
+      const seconds = Math.floor(video.duration);
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      resolve(`${m}:${s.toString().padStart(2, "0")}`);
+      URL.revokeObjectURL(video.src);
+    };
+
+    video.src = URL.createObjectURL(file);
+  });
+
 /* ---------------- PAGE ---------------- */
 export default function UploadDetailsPage() {
   const [title, setTitle] = useState("");
@@ -45,19 +62,31 @@ export default function UploadDetailsPage() {
   const [uploadData, setUploadData] = useState(null);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
     const data = window.__uploadData;
-    if (!data) {
+
+    if (!data || !data.videoFile) {
       window.location.href = "/upload";
       return;
     }
 
-    setUploadData(data);
-    setMeta(data.meta);
+    const init = async () => {
+      const duration = await getVideoDuration(data.videoFile);
 
-    const url = URL.createObjectURL(data.videoFile);
-    setVideoPreviewUrl(url);
+      const updatedMeta = {
+        ...data.meta,
+        duration,
+      };
 
-    return () => URL.revokeObjectURL(url);
+      setUploadData(data);
+      setMeta(updatedMeta);
+
+      const url = URL.createObjectURL(data.videoFile);
+      setVideoPreviewUrl(url);
+    };
+
+    init();
   }, []);
 
   const publish = async () => {
@@ -77,16 +106,16 @@ export default function UploadDetailsPage() {
           videoUrl,
           thumbnail: thumbUrl,
           contentType: meta.contentType,
+          duration: meta.duration,
           editMetadata: { filter: meta.filter?.name },
         }),
       });
 
       delete window.__uploadData;
-      sessionStorage.removeItem("uploadMeta");
       alert("Video published successfully");
-
       window.location.href = "/";
-    } catch {
+    } catch (err) {
+      console.error(err);
       alert("Publish failed");
     } finally {
       setUploading(false);
@@ -100,7 +129,6 @@ export default function UploadDetailsPage() {
   return (
     <div className="pt-24 min-h-screen bg-gray-100 dark:bg-gray-900 px-4">
       <div className="mx-auto max-w-3xl">
-
         {/* HEADER */}
         <div className="flex items-center gap-3 mb-6">
           <button
@@ -112,10 +140,9 @@ export default function UploadDetailsPage() {
           <h1 className="text-xl font-semibold">Review & publish</h1>
         </div>
 
-        {/* MAIN CARD */}
+        {/* CARD */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 space-y-8">
-
-          {/* VIDEO PREVIEW */}
+          {/* PREVIEW */}
           <div>
             <div className="flex items-center gap-2 mb-3">
               <Eye size={18} />
@@ -131,36 +158,25 @@ export default function UploadDetailsPage() {
               />
             </div>
 
-            {meta?.filter && (
-              <div className="mt-3 inline-flex items-center gap-2
-                              text-xs bg-gray-100 dark:bg-gray-700
-                              px-3 py-1 rounded-full">
-                Visual style:
-                <span className="font-medium">{meta.filter.name}</span>
-              </div>
-            )}
+            <div className="mt-2 text-xs text-gray-500">
+              Duration: <span className="font-medium">{meta?.duration}</span>
+            </div>
           </div>
 
           {/* CAPTION */}
           <div>
             <div className="flex items-center gap-2 mb-2">
               <Type size={18} />
-              <label className="text-sm font-medium">
-                Caption
-              </label>
+              <label className="text-sm font-medium">Caption</label>
             </div>
 
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Write a caption for your video"
-              className="
-                w-full px-4 py-2.5 rounded-lg
-                bg-white dark:bg-gray-700
-                text-gray-900 dark:text-white
-                border border-gray-300 dark:border-gray-600
-                focus:outline-none focus:ring-2 focus:ring-red-500
-              "
+              className="w-full px-4 py-2.5 rounded-lg bg-white dark:bg-gray-700
+                         text-gray-900 dark:text-white border border-gray-300
+                         dark:border-gray-600 focus:ring-2 focus:ring-red-500"
             />
           </div>
 
@@ -169,15 +185,12 @@ export default function UploadDetailsPage() {
             <button
               disabled={uploading}
               onClick={publish}
-              className={`
-                flex items-center gap-2
-                px-7 py-2.5 rounded-full text-sm font-medium transition
+              className={`px-7 py-2.5 rounded-full text-sm font-medium transition
                 ${
                   uploading
-                    ? "bg-gray-400 dark:bg-gray-600 text-gray-700 cursor-not-allowed"
-                    : "bg-red-600 hover:bg-red-700 text-white shadow-md"
-                }
-              `}
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-red-600 hover:bg-red-700 text-white"
+                }`}
             >
               <UploadCloud size={16} />
               {uploading ? "Publishing…" : "Publish"}
