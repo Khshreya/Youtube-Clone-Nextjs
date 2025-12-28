@@ -20,17 +20,24 @@ export default function RootLayout({ children }) {
         <ThemeWrapper>
           {!isAuthPage && <Sidebar />}
 
-          <div className={!isAuthPage ? "flex-1 flex flex-col h-screen" : "flex-1"}>
+          {/* Main content */}
+          <div
+            className={
+              !isAuthPage
+                ? "flex-1 flex flex-col h-screen md:ml-[72px]"
+                : "flex-1"
+            }
+          >
             {!isAuthPage && <Navbar />}
 
-            {/* Header area (below nav) stays constant */}
+            {/* Header area */}
             <div className="pt-14">
               {!isAuthPage && <MobileSearchBar />}
               {!isAuthPage && <CategoryList />}
             </div>
 
-            {/* Scrollable content area */}
-            <main className="flex-1 overflow-auto">
+            {/* Scrollable content */}
+            <main className="flex-1 overflow-auto relative z-0">
               {children}
             </main>
           </div>

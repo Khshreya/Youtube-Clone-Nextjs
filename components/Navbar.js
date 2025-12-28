@@ -1,50 +1,66 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
+import {
+  Sun,
+  Moon,
+  Settings,
+  LogOut,
+  ChevronRight,
+  Check,
+
+  Palette,
+} from "lucide-react";
 import { useUIStore } from "@/store/uiStore";
 
 export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
-  const [menuOpen, setMenuOpen] = useState(false);
 
-  const toggleCollapseSidebar = useUIStore((s) => s.toggleCollapseSidebar);
-  const toggleMobileSidebar = useUIStore((s) => s.toggleMobileSidebar);
-  const toggleDarkMode = useUIStore((s) => s.toggleDarkMode);
+  const toggleSidebar = useUIStore((s) => s.toggleMobileSidebar);
   const darkMode = useUIStore((s) => s.darkMode);
-  const searchTerm = useUIStore((s) => s.searchTerm);
-  const setSearchTerm = useUIStore((s) => s.setSearchTerm);
+  const toggleDarkMode = useUIStore((s) => s.toggleDarkMode);
 
   const [user, setUser] = useState(null);
+  const [openMenu, setOpenMenu] = useState(false);
+  const [openThemeMenu, setOpenThemeMenu] = useState(false);
+
+  const menuRef = useRef(null);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await fetch("/api/auth/me");
-        const data = await res.json();
-        setUser(data.user);
-      } catch {
-        setUser(null);
-      }
-    };
-    fetchUser();
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((d) => setUser(d.user))
+      .catch(() => setUser(null));
   }, []);
 
-  const handleLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
-    setUser(null);
-    router.push("/login");
-    router.refresh();
-  };
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setOpenMenu(false);
+        setOpenThemeMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-  /* ✅ CORRECT SEARCH HIDE LOGIC */
   const hideSearch =
     pathname.startsWith("/upload") ||
     pathname.startsWith("/settings") ||
-    pathname.startsWith("/details") ||
     pathname.startsWith("/shorts");
+
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    setOpenMenu(false);
+    setOpenThemeMenu(false);
+    router.push("/login");
+    router.refresh();
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-900">
@@ -52,19 +68,11 @@ export default function Navbar() {
         {/* LEFT */}
         <div className="flex items-center gap-3">
           <button
-            onClick={toggleCollapseSidebar}
-            className="hidden md:block p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+            onClick={toggleSidebar}
+            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             ☰
           </button>
-
-          <button
-            onClick={toggleMobileSidebar}
-            className="md:hidden p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
-          >
-            ☰
-          </button>
-
           <h1 className="text-lg font-semibold">CnTube</h1>
         </div>
 
@@ -72,95 +80,137 @@ export default function Navbar() {
         {!hideSearch && (
           <div className="hidden sm:flex flex-1 max-w-md mx-4">
             <input
-              type="text"
               placeholder="Search"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 rounded-full bg-gray-100 dark:bg-gray-800 outline-none"
+              className="w-full px-4 py-2 rounded-full
+                         bg-gray-100 dark:bg-gray-800 outline-none"
             />
           </div>
         )}
 
         {/* RIGHT */}
         <div className="flex items-center gap-3">
-          {/* Create */}
           <button
             onClick={() => router.push("/upload")}
-            className="flex items-center gap-2 px-4 py-2 rounded-full
-                       bg-gray-100 dark:bg-gray-800
-                       hover:bg-gray-200 dark:hover:bg-gray-700
-                       text-sm font-medium"
+            className="px-4 py-2 rounded-full
+                       bg-gray-100 dark:bg-gray-800 text-sm"
           >
-            <span className="text-lg">+</span>
-            Create
-          </button>
-
-          {/* Theme */}
-          <button
-            onClick={toggleDarkMode}
-            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
-            title="Toggle theme"
-          >
-            {darkMode ? "☀️" : "🌙"}
+            + Create
           </button>
 
           {/* Avatar */}
-          {user && (
-            <div className="relative">
+          {user ? (
+            <div className="relative" ref={menuRef}>
               <button
-                onClick={() => setMenuOpen((p) => !p)}
-                className="w-9 h-9 rounded-full border
-                           bg-red-600 text-white font-semibold
-                           flex items-center justify-center"
+                onClick={() => setOpenMenu((p) => !p)}
+                className="w-9 h-9 rounded-full bg-red-600 text-white
+                           flex items-center justify-center font-semibold"
               >
-                {user.name?.charAt(0).toUpperCase()}
+                {user.name?.[0]?.toUpperCase()}
               </button>
 
-              {menuOpen && (
-                <div className="absolute right-0 mt-2 w-48
-                                bg-white dark:bg-gray-800
-                                rounded-xl shadow-lg
-                                border dark:border-gray-700 z-50">
+              {/* DROPDOWN */}
+              {openMenu && (
+                <div
+                  className="
+                    absolute right-0 mt-2 w-56
+                    bg-white dark:bg-gray-800
+                    rounded-xl shadow-2xl
+                    border dark:border-gray-700
+                    overflow-hidden
+                    z-[60]
+                  "
+                >
+                  {/* USER INFO */}
                   <div className="px-4 py-3">
                     <p className="text-sm font-semibold">{user.name}</p>
-                    <p className="text-xs text-gray-500">Your channel</p>
+                    <p className="text-xs text-gray-500">{user.email}</p>
                   </div>
 
                   <div className="h-px bg-gray-200 dark:bg-gray-700" />
 
+                  {/* SETTINGS */}
                   <button
                     onClick={() => {
-                      setMenuOpen(false);
+                      setOpenMenu(false);
                       router.push("/settings");
                     }}
-                    className="w-full text-left px-4 py-2.5 text-sm
+                    className="w-full flex items-center gap-3
+                               px-4 py-2.5 text-sm
                                hover:bg-gray-100 dark:hover:bg-gray-700"
                   >
+                    <Settings size={18} />
                     Settings
                   </button>
 
-                  <div className="h-px bg-gray-200 dark:bg-gray-700" />
-
+                  {/* CHANGE THEME */}
                   <button
-                    onClick={() => {
-                      setMenuOpen(false);
-                      handleLogout();
-                    }}
-                    className="w-full text-left px-4 py-2.5 text-sm text-red-600
+                    onClick={() => setOpenThemeMenu((p) => !p)}
+                    className="w-full flex items-center justify-between
+                               px-4 py-2.5 text-sm
                                hover:bg-gray-100 dark:hover:bg-gray-700"
                   >
+                   <div className="flex items-center gap-3">
+  <Palette size={18} />
+  Change Theme
+</div>
+                    <ChevronRight size={16} />
+                  </button>
+
+                  {/* THEME OPTIONS */}
+                  {openThemeMenu && (
+                    <div className="mx-2 mb-2 rounded-lg border dark:border-gray-700">
+                      {/* LIGHT */}
+                      <button
+                        onClick={() => {
+                          if (darkMode) toggleDarkMode();
+                        }}
+                        className="w-full flex items-center justify-between
+                                   px-3 py-2 text-sm
+                                   hover:bg-gray-100 dark:hover:bg-gray-700"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Sun size={16} />
+                          Light Theme
+                        </div>
+                        {!darkMode && <Check size={16} />}
+                      </button>
+
+                      {/* DARK */}
+                      <button
+                        onClick={() => {
+                          if (!darkMode) toggleDarkMode();
+                        }}
+                        className="w-full flex items-center justify-between
+                                   px-3 py-2 text-sm
+                                   hover:bg-gray-100 dark:hover:bg-gray-700"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Moon size={16} />
+                          Dark Theme
+                        </div>
+                        {darkMode && <Check size={16} />}
+                      </button>
+                    </div>
+                  )}
+
+                  <div className="h-px bg-gray-200 dark:bg-gray-700" />
+
+                  {/* LOGOUT */}
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-3
+                               px-4 py-2.5 text-sm
+                               text-red-600
+                               hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >
+                    <LogOut size={18} />
                     Logout
                   </button>
                 </div>
               )}
             </div>
-          )}
-
-          {!user && (
-            <Link
-              href="/login"
-              className="text-sm px-3 py-1 border rounded"
-            >
+          ) : (
+            <Link href="/login" className="px-3 py-1 border rounded">
               Login
             </Link>
           )}
