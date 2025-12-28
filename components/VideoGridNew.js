@@ -1,14 +1,27 @@
 import { prisma } from "@/lib/prisma";
 import VideoGridClient from "./VideoGridClient";
+import ShortsRow from "@/components/ShortsRow";
 
 export default async function VideoGridNew() {
-  const videos = await prisma.video.findMany({
+  const allVideos = await prisma.video.findMany({
     orderBy: { createdAt: "desc" },
   });
 
-  if (!videos || videos.length === 0) {
-    return <div className="p-4">No videos available</div>;
-  }
+  const videos = allVideos.filter(
+    (v) => v.contentType !== "short"
+  );
 
-  return <VideoGridClient videos={videos} />;
+  const shorts = allVideos.filter(
+    (v) => v.contentType === "short"
+  );
+
+  return (
+    <>
+      {/* NORMAL VIDEOS */}
+      <VideoGridClient videos={videos} />
+
+      {/* SHORTS SECTION */}
+      <ShortsRow shorts={shorts} />
+    </>
+  );
 }

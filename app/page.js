@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import Link from "next/link";
 import VideoGridClient from "@/components/VideoGridClient";
+import ShortsRow from "@/components/ShortsRow";
 
 export default async function Home() {
   const user = await getCurrentUser();
@@ -33,14 +34,33 @@ export default async function Home() {
     );
   }
 
+  //  Fetch shorts
+  const shorts = await prisma.video.findMany({
+    where: { contentType: "short" },
+    orderBy: { createdAt: "desc" },
+    take: 10,
+  });
+
+  //  Fetch videos
   const videos = await prisma.video.findMany({
     where: { contentType: "video" },
     orderBy: { createdAt: "desc" },
   });
 
+  // Split videos to place shorts in the middle
+  const firstBatch = videos.slice(0, 8);
+  const remainingVideos = videos.slice(8);
+
   return (
-    <div className="mt-4">
-      <VideoGridClient videos={videos} />
+    <div className="space-y-10 pb-10">
+      {/*  TOP VIDEOS */}
+      <VideoGridClient videos={firstBatch} />
+
+      {/*  SHORTS (CENTER) */}
+      {shorts.length > 0 && <ShortsRow shorts={shorts} />}
+
+      {/*  MORE VIDEOS */}
+      <VideoGridClient videos={remainingVideos} />
     </div>
   );
 }
