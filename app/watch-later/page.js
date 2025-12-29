@@ -1,24 +1,24 @@
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import VideoGridClient from "@/components/VideoGridClient";
-
+import LoggedOutMessage from "@/components/LoggedOutMessage";
 export const dynamic = "force-dynamic";
 
 export default async function WatchLaterPage() {
   const user = await getCurrentUser();
+if (!user) {
+  return <LoggedOutMessage type="watchLater" />;
+}
 
-  if (!user) {
-    return (
-      <div className="p-6">
-        <h1 className="text-2xl font-semibold mb-4">
-          Watch Later
-        </h1>
-        <p className="text-gray-500">
-          Please login to view your Watch Later videos.
-        </p>
-      </div>
-    );
-  }
+if (user.isGuest) {
+  return (
+    <LoggedOutMessage
+      type="watchLater"
+      isGuest
+    />
+  );
+}
+
 
   const items = await prisma.watchLater.findMany({
     where: { userId: user.id },

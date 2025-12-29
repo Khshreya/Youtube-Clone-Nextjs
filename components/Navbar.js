@@ -10,7 +10,6 @@ import {
   LogOut,
   ChevronRight,
   Check,
-
   Palette,
 } from "lucide-react";
 import { useUIStore } from "@/store/uiStore";
@@ -32,7 +31,7 @@ export default function Navbar() {
   useEffect(() => {
     fetch("/api/auth/me")
       .then((r) => r.json())
-      .then((d) => setUser(d.user))
+      .then((d) => setUser(d?.user ?? null))
       .catch(() => setUser(null));
   }, []);
 
@@ -108,106 +107,116 @@ export default function Navbar() {
                 {user.name?.[0]?.toUpperCase()}
               </button>
 
-              {/* DROPDOWN */}
-              {openMenu && (
-                <div
-                  className="
-                    absolute right-0 mt-2 w-56
-                    bg-white dark:bg-gray-800
-                    rounded-xl shadow-2xl
-                    border dark:border-gray-700
-                    overflow-hidden
-                    z-[60]
-                  "
+              {/* DROPDOWN (animated) */}
+              <div
+                className={`
+                  absolute right-0 mt-2 w-56
+                  bg-white dark:bg-gray-800
+                  rounded-xl shadow-2xl
+                  border dark:border-gray-700
+                  overflow-hidden z-[60]
+                  transform transition-all duration-200 ease-out
+                  ${
+                    openMenu
+                      ? "opacity-100 scale-100 translate-y-0"
+                      : "opacity-0 scale-95 -translate-y-2 pointer-events-none"
+                  }
+                `}
+              >
+                {/* USER INFO */}
+                <div className="px-4 py-3">
+                  <p className="text-sm font-semibold">{user.name}</p>
+                  <p className="text-xs text-gray-500">{user.email}</p>
+                </div>
+
+                <div className="h-px bg-gray-200 dark:bg-gray-700" />
+
+                {/* SETTINGS */}
+                <button
+                  onClick={() => {
+                    setOpenMenu(false);
+                    router.push("/settings");
+                  }}
+                  className="w-full flex items-center gap-3
+                             px-4 py-2.5 text-sm
+                             hover:bg-gray-100 dark:hover:bg-gray-700"
                 >
-                  {/* USER INFO */}
-                  <div className="px-4 py-3">
-                    <p className="text-sm font-semibold">{user.name}</p>
-                    <p className="text-xs text-gray-500">{user.email}</p>
+                  <Settings size={18} />
+                  Settings
+                </button>
+
+                {/* CHANGE THEME */}
+                <button
+                  onClick={() => setOpenThemeMenu((p) => !p)}
+                  className="w-full flex items-center justify-between
+                             px-4 py-2.5 text-sm
+                             hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                  <div className="flex items-center gap-3">
+                    <Palette size={18} />
+                    Change Theme
                   </div>
+                  <ChevronRight size={16} />
+                </button>
 
-                  <div className="h-px bg-gray-200 dark:bg-gray-700" />
-
-                  {/* SETTINGS */}
+                {/* THEME SUBMENU (animated) */}
+                <div
+                  className={`
+                    mx-2 mb-2 rounded-lg border dark:border-gray-700
+                    transform transition-all duration-200 ease-out
+                    ${
+                      openThemeMenu
+                        ? "opacity-100 scale-100"
+                        : "opacity-0 scale-95 h-0 overflow-hidden pointer-events-none"
+                    }
+                  `}
+                >
+                  {/* LIGHT */}
                   <button
                     onClick={() => {
-                      setOpenMenu(false);
-                      router.push("/settings");
+                      if (darkMode) toggleDarkMode();
                     }}
-                    className="w-full flex items-center gap-3
-                               px-4 py-2.5 text-sm
-                               hover:bg-gray-100 dark:hover:bg-gray-700"
-                  >
-                    <Settings size={18} />
-                    Settings
-                  </button>
-
-                  {/* CHANGE THEME */}
-                  <button
-                    onClick={() => setOpenThemeMenu((p) => !p)}
                     className="w-full flex items-center justify-between
-                               px-4 py-2.5 text-sm
+                               px-3 py-2 text-sm
                                hover:bg-gray-100 dark:hover:bg-gray-700"
                   >
-                   <div className="flex items-center gap-3">
-  <Palette size={18} />
-  Change Theme
-</div>
-                    <ChevronRight size={16} />
+                    <div className="flex items-center gap-2">
+                      <Sun size={16} />
+                      Light Theme
+                    </div>
+                    {!darkMode && <Check size={16} />}
                   </button>
 
-                  {/* THEME OPTIONS */}
-                  {openThemeMenu && (
-                    <div className="mx-2 mb-2 rounded-lg border dark:border-gray-700">
-                      {/* LIGHT */}
-                      <button
-                        onClick={() => {
-                          if (darkMode) toggleDarkMode();
-                        }}
-                        className="w-full flex items-center justify-between
-                                   px-3 py-2 text-sm
-                                   hover:bg-gray-100 dark:hover:bg-gray-700"
-                      >
-                        <div className="flex items-center gap-2">
-                          <Sun size={16} />
-                          Light Theme
-                        </div>
-                        {!darkMode && <Check size={16} />}
-                      </button>
-
-                      {/* DARK */}
-                      <button
-                        onClick={() => {
-                          if (!darkMode) toggleDarkMode();
-                        }}
-                        className="w-full flex items-center justify-between
-                                   px-3 py-2 text-sm
-                                   hover:bg-gray-100 dark:hover:bg-gray-700"
-                      >
-                        <div className="flex items-center gap-2">
-                          <Moon size={16} />
-                          Dark Theme
-                        </div>
-                        {darkMode && <Check size={16} />}
-                      </button>
-                    </div>
-                  )}
-
-                  <div className="h-px bg-gray-200 dark:bg-gray-700" />
-
-                  {/* LOGOUT */}
+                  {/* DARK */}
                   <button
-                    onClick={handleLogout}
-                    className="w-full flex items-center gap-3
-                               px-4 py-2.5 text-sm
-                               text-red-600
+                    onClick={() => {
+                      if (!darkMode) toggleDarkMode();
+                    }}
+                    className="w-full flex items-center justify-between
+                               px-3 py-2 text-sm
                                hover:bg-gray-100 dark:hover:bg-gray-700"
                   >
-                    <LogOut size={18} />
-                    Logout
+                    <div className="flex items-center gap-2">
+                      <Moon size={16} />
+                      Dark Theme
+                    </div>
+                    {darkMode && <Check size={16} />}
                   </button>
                 </div>
-              )}
+
+                <div className="h-px bg-gray-200 dark:bg-gray-700" />
+
+                {/* LOGOUT */}
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3
+                             px-4 py-2.5 text-sm text-red-600
+                             hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                  <LogOut size={18} />
+                  Logout
+                </button>
+              </div>
             </div>
           ) : (
             <Link href="/login" className="px-3 py-1 border rounded">

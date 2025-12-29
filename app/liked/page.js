@@ -1,19 +1,24 @@
+
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import VideoGridClient from "@/components/VideoGridClient";
-
+import LoggedOutMessage from "@/components/LoggedOutMessage";
 export const dynamic = "force-dynamic";
 
 export default async function LikedVideosPage() {
   const user = await getCurrentUser();
 
-  if (!user) {
-    return (
-      <div className="p-6 text-gray-500">
-        Please login to view liked videos.
-      </div>
-    );
-  }
+   if (!user) {
+     return <LoggedOutMessage type="liked" />;
+   }
+  if (user.isGuest) {
+     return (
+       <LoggedOutMessage
+         type="liked"
+         isGuest
+       />
+     );
+   }
 
   // Fetch liked video IDs
   const likes = await prisma.like.findMany({

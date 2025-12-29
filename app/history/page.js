@@ -1,20 +1,25 @@
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import VideoGridClient from "@/components/VideoGridClient";
+import LoggedOutMessage from "@/components/LoggedOutMessage";
 
 export const dynamic = "force-dynamic";
 
 export default async function HistoryPage() {
   const user = await getCurrentUser();
 
+ 
   if (!user) {
+    return <LoggedOutMessage type="history" />;
+  }
+ if (user.isGuest) {
     return (
-      <div className="p-6 text-gray-500">
-        Please login to view your history.
-      </div>
+      <LoggedOutMessage
+        type="history"
+        isGuest
+      />
     );
   }
-
   const historyRaw = await prisma.history.findMany({
     where: { userId: user.id },
     orderBy: { watchedAt: "desc" },
@@ -34,7 +39,9 @@ export default async function HistoryPage() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-semibold mb-4">History</h1>
+      <h1 className="text-2xl font-semibold mb-4">
+        History
+      </h1>
 
       {videos.length === 0 ? (
         <p className="text-gray-500">

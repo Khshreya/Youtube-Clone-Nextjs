@@ -5,7 +5,7 @@ export function middleware(request: NextRequest) {
   const sessionId = request.cookies.get("session_id")?.value;
   const pathname = request.nextUrl.pathname;
 
-
+  //  Always allow auth pages
   if (
     pathname.startsWith("/login") ||
     pathname.startsWith("/register")
@@ -13,25 +13,33 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const protectedRoutes = [
-    "/watch",
-    "/subscriptions",
+  // Explicitly allow SOFT pages (no redirect ever)
+  const softRoutes = [
+    "/settings",
     "/history",
     "/watch-later",
     "/liked",
-    "/shorts",
-    "/music",
-    "/trending",
-    "/gaming",
+    "/subscriptions",
     "/upload",
-    
+    "/channel",
   ];
 
-  const isProtected = protectedRoutes.some((route) =>
-    pathname.startsWith(route)
-  );
+  if (softRoutes.some((route) => pathname.startsWith(route))) {
+    return NextResponse.next();
+  }
 
-  if (!sessionId && isProtected) {
+  //  ONLY truly private routes
+  const hardProtectedRoutes = [
+    "/channel",
+    "/upload/details",
+  ];
+
+  if (
+    !sessionId &&
+    hardProtectedRoutes.some((route) =>
+      pathname.startsWith(route)
+    )
+  ) {
     return NextResponse.redirect(
       new URL("/login", request.url)
     );
@@ -44,15 +52,13 @@ export const config = {
   matcher: [
     "/login/:path*",
     "/register/:path*",
-    "/watch/:path*",
     "/subscriptions/:path*",
+    "/upload/:path*",
+    "/upload/details/:path*",
+    "/settings/:path*",
     "/history/:path*",
     "/watch-later/:path*",
     "/liked/:path*",
-    "/shorts/:path*",
-    "/music/:path*",
-    "/trending/:path*",
-    "/gaming/:path*",
-     "/upload/:path*",
+    "/channel/:path*",
   ],
 };
