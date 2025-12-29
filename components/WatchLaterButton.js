@@ -1,26 +1,27 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Clock, Check } from "lucide-react";
+import { Clock } from "lucide-react";
 
 export default function WatchLaterButton({ videoId }) {
   const [saved, setSaved] = useState(false);
-  const [justSaved, setJustSaved] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isGuest, setIsGuest] = useState(false);
 
-  // Fetch saved status
+  // Load saved status + user
   useEffect(() => {
     const load = async () => {
       try {
-        const [res, meRes] = await Promise.all([
+        const [statusRes, meRes] = await Promise.all([
           fetch(`/api/watch-later/status?videoId=${videoId}`),
-          fetch('/api/auth/me'),
+          fetch("/api/auth/me"),
         ]);
-        const data = await res.json();
-        const me = await meRes.json().catch(() => ({}));
-        setSaved(data.saved);
-        setIsGuest(!!me.user?.isGuest);
+
+        const statusData = await statusRes.json();
+        const meData = await meRes.json().catch(() => ({}));
+
+        setSaved(!!statusData.saved);
+        setIsGuest(!!meData.user?.isGuest);
       } catch (err) {
         console.error(err);
       } finally {
@@ -32,24 +33,27 @@ export default function WatchLaterButton({ videoId }) {
 
   const handleClick = async (e) => {
     e.stopPropagation();
-    if (loading || saved) return;
+    if (loading) return;
 
     if (isGuest) {
-      alert("Sign in to save videos");
+      alert("Sign in to use Watch Later");
       return;
     }
 
-    setSaved(true);
-    setJustSaved(true); // trigger green feedback
+    // Optimistic toggle
+    setSaved((prev) => !prev);
 
-    await fetch("/api/watch-later", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ videoId }),
-    });
-
-    // Remove green highlight after 1.2s
-    setTimeout(() => setJustSaved(false), 1200);
+    try {
+      await fetch("/api/watch-later", {
+        method: saved ? "DELETE" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ videoId }),
+      });
+    } catch (err) {
+      console.error(err);
+      // revert on error
+      setSaved((prev) => !prev);
+    }
   };
 
   return (
@@ -57,27 +61,19 @@ export default function WatchLaterButton({ videoId }) {
       type="button"
       onClick={handleClick}
       disabled={loading}
-      title={saved ? "Saved to Watch later" : "Watch later"}
-      className={`relative p-3 rounded-full border transition-all duration-200
+      title={saved ? "Remove from Watch later" : "Save to Watch later"}
+      className={`
+        flex items-center justify-center
+        w-11 h-11 rounded-full
+        transition-all duration-200
         ${
-          justSaved
-            ? "bg-green-100 border-green-300"
-            : "bg-white border-gray-300 hover:bg-gray-100"
+          saved
+            ? "bg-blue-600 text-white shadow-md"
+            : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
         }
       `}
     >
-      {/* CLOCK ICON */}
-      <Clock
-        size={18}
-        className="text-gray-700"
-      />
-
-      {/* SMALL CHECK INDICATOR (persistent) */}
-      {saved && !justSaved && (
-        <span className="absolute -top-1 -right-1 bg-green-600 rounded-full p-[2px]">
-          <Check size={10} className="text-white" />
-        </span>
-      )}
+      <Clock size={18} />
     </button>
   );
 }

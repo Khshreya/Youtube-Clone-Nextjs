@@ -16,3 +16,25 @@
   background: #bdbdbd;
   border-radius: 10px;
 }
+.short-action button {
+  width: 52px;
+  height: 52px;
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.short-action button:active {
+  transform: scale(0.9);
+}
+
+.short-action span {
+  color: white;
+  font-size: 12px;
+  margin-top: 4px;
+}
+

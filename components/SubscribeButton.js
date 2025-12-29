@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Check } from "lucide-react";
 
 export default function SubscribeButton({ channel }) {
   const router = useRouter();
+
   const [subscribed, setSubscribed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isGuest, setIsGuest] = useState(false);
@@ -13,11 +15,15 @@ export default function SubscribeButton({ channel }) {
     const load = async () => {
       try {
         const [statusRes, meRes] = await Promise.all([
-          fetch(`/api/subscription/status?channel=${encodeURIComponent(channel)}`),
+          fetch(
+            `/api/subscription/status?channel=${encodeURIComponent(channel)}`
+          ),
           fetch("/api/auth/me"),
         ]);
+
         const statusData = await statusRes.json();
         const meData = await meRes.json().catch(() => ({}));
+
         setSubscribed(statusData.subscribed);
         setIsGuest(!!meData.user?.isGuest);
       } catch (err) {
@@ -26,14 +32,16 @@ export default function SubscribeButton({ channel }) {
         setLoading(false);
       }
     };
+
     load();
   }, [channel]);
 
-  const handleClick = async () => {
+  const handleClick = async (e) => {
+    e.stopPropagation();
     if (loading) return;
 
     if (isGuest) {
-      alert("Sign in to subscribe");
+      router.push("/login");
       return;
     }
 
@@ -46,16 +54,14 @@ export default function SubscribeButton({ channel }) {
         body: JSON.stringify({ channel }),
       });
 
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data?.error || "Subscription failed");
-      }
+      if (!res.ok) throw new Error("Subscription failed");
 
-      setSubscribed(!subscribed);
-      // refresh current route so subscription-only pages update
-      try { router.refresh(); } catch (e) {}
+      setSubscribed((p) => !p);
+      try {
+        router.refresh();
+      } catch {}
     } catch (err) {
-      console.error("Subscription failed", err);
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -65,15 +71,30 @@ export default function SubscribeButton({ channel }) {
     <button
       onClick={handleClick}
       disabled={loading}
-      className={`px-5 py-2 rounded-full text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed
+      className={`
+        inline-flex items-center gap-2
+        px-4 py-1.5 rounded-full
+        text-sm font-semibold
+        transition-all duration-200
+        disabled:opacity-60 disabled:cursor-not-allowed
+
         ${
           subscribed
-            ? "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            : "bg-black text-white hover:bg-gray-900"
+            ? "bg-gray-200 text-gray-800 hover:bg-gray-300"
+            : "bg-red-600 text-white hover:bg-red-700"
         }
       `}
     >
-      {loading ? (subscribed ? "Processing..." : "Processing...") : subscribed ? "Subscribed" : "Subscribe"}
+      {loading ? (
+        "Processing…"
+      ) : subscribed ? (
+        <>
+          <Check size={14} />
+          Subscribed
+        </>
+      ) : (
+        "Subscribe"
+      )}
     </button>
   );
 }

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import VideoActions from "@/components/VideoActions";
 
 export default async function WatchPage({ params }) {
-  const { id } = await params; // ✅ FIX
+  const { id } = await params; 
 
   if (!id) notFound();
 
@@ -28,7 +28,7 @@ export default async function WatchPage({ params }) {
       </h1>
 
       <p className="text-sm text-gray-500 mt-1">
-        {video.channel} • {video.duration}
+        {video.channel} 
       </p>
 
       <VideoActions video={video} />

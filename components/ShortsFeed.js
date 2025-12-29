@@ -35,7 +35,6 @@ export default function ShortsFeed({ shorts }) {
   useEffect(() => {
     videoRefs.current.forEach((video, i) => {
       if (!video) return;
-
       if (i === activeIndex) {
         video.play().catch(() => {});
       } else {
@@ -49,10 +48,9 @@ export default function ShortsFeed({ shorts }) {
   useEffect(() => {
     const short = shorts[activeIndex];
     if (!short) return;
-
     if (savedHistoryRef.current.has(short.id)) return;
-    savedHistoryRef.current.add(short.id);
 
+    savedHistoryRef.current.add(short.id);
     fetch("/api/history", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -61,7 +59,7 @@ export default function ShortsFeed({ shorts }) {
   }, [activeIndex, shorts]);
 
   return (
-    <div className="h-[calc(100vh-56px)] overflow-y-scroll snap-y snap-mandatory ">
+    <div className="h-[calc(100vh-56px)] overflow-y-scroll snap-y snap-mandatory">
       {shorts.map((short, i) => {
         const ytId = getYouTubeId(short.videoUrl);
         const isActive = i === activeIndex;
@@ -75,7 +73,7 @@ export default function ShortsFeed({ shorts }) {
           >
             <div className="relative w-full max-w-sm h-full overflow-hidden bg-black">
 
-              {/* VIDEO LAYER (NON CLICKABLE) */}
+              {/* VIDEO */}
               {ytId ? (
                 <iframe
                   key={`${ytId}-${audioEnabled}-${isActive}`}
@@ -97,7 +95,7 @@ export default function ShortsFeed({ shorts }) {
                 />
               )}
 
-              {/* TAP TO UNMUTE (SAFE OVERLAY) */}
+              {/* TAP TO UNMUTE */}
               {!audioEnabled && isActive && (
                 <div className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none">
                   <button
@@ -109,18 +107,30 @@ export default function ShortsFeed({ shorts }) {
                 </div>
               )}
 
-              {/* ACTION BUTTONS */}
+              {/* RIGHT ACTIONS (LIKE / DISLIKE / WATCH LATER) */}
               <div className="absolute right-3 bottom-24 z-50 pointer-events-auto flex flex-col items-center gap-5">
                 <LikeDislikeBar videoId={short.id} layout="vertical" />
                 <WatchLaterButton videoId={short.id} />
-                <SubscribeButton channel={short.channel} />
               </div>
 
-              {/* TEXT */}
-              <div className="absolute bottom-6 left-4 right-4 z-50 text-white">
-                <h3 className="font-semibold text-lg">{short.title}</h3>
-                <p className="text-sm opacity-80">{short.channel}</p>
-              </div>
+              {/* BOTTOM LEFT TEXT + SUBSCRIBE */}
+             {/* BOTTOM LEFT TEXT + SUBSCRIBE */}
+<div className="absolute bottom-6 left-4 right-4 z-50 text-white">
+  <h3 className="font-semibold text-lg leading-tight">
+    {short.title}
+  </h3>
+
+  <p className="text-sm opacity-80 mt-1">
+    @{short.channel}
+  </p>
+
+  {/* SUBSCRIBE BELOW CHANNEL NAME */}
+  <div className="mt-3">
+    <SubscribeButton channel={short.channel} />
+  </div>
+</div>
+
+
             </div>
           </div>
         );

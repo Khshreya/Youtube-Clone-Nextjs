@@ -28,6 +28,7 @@ export default function Navbar() {
 
   const menuRef = useRef(null);
 
+  /* ---------------- FETCH USER ---------------- */
   useEffect(() => {
     fetch("/api/auth/me")
       .then((r) => r.json())
@@ -35,7 +36,7 @@ export default function Navbar() {
       .catch(() => setUser(null));
   }, []);
 
-  // Close dropdown when clicking outside
+  /* ---------------- CLOSE ON OUTSIDE CLICK ---------------- */
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -48,11 +49,26 @@ export default function Navbar() {
       document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  /* ---------------- SEARCH VISIBILITY ---------------- */
+  const restrictedSearchPages = [
+    "/liked",
+    "/watch-later",
+    "/subscriptions",
+    "/channel",
+    "/history",
+  ];
+
+  const isRestrictedSearchPage = restrictedSearchPages.some((p) =>
+    pathname.startsWith(p)
+  );
+
   const hideSearch =
     pathname.startsWith("/upload") ||
     pathname.startsWith("/settings") ||
-    pathname.startsWith("/shorts");
+    pathname.startsWith("/shorts") ||
+    (isRestrictedSearchPage && (!user || user.isGuest));
 
+  /* ---------------- LOGOUT ---------------- */
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
     setOpenMenu(false);
@@ -96,7 +112,7 @@ export default function Navbar() {
             + Create
           </button>
 
-          {/* Avatar */}
+          {/* USER MENU */}
           {user ? (
             <div className="relative" ref={menuRef}>
               <button
@@ -107,7 +123,7 @@ export default function Navbar() {
                 {user.name?.[0]?.toUpperCase()}
               </button>
 
-              {/* DROPDOWN (animated) */}
+              {/* DROPDOWN */}
               <div
                 className={`
                   absolute right-0 mt-2 w-56
@@ -145,7 +161,7 @@ export default function Navbar() {
                   Settings
                 </button>
 
-                {/* CHANGE THEME */}
+                {/* THEME */}
                 <button
                   onClick={() => setOpenThemeMenu((p) => !p)}
                   className="w-full flex items-center justify-between
@@ -159,11 +175,11 @@ export default function Navbar() {
                   <ChevronRight size={16} />
                 </button>
 
-                {/* THEME SUBMENU (animated) */}
+                {/* THEME OPTIONS */}
                 <div
                   className={`
                     mx-2 mb-2 rounded-lg border dark:border-gray-700
-                    transform transition-all duration-200 ease-out
+                    transform transition-all duration-200
                     ${
                       openThemeMenu
                         ? "opacity-100 scale-100"
@@ -171,11 +187,8 @@ export default function Navbar() {
                     }
                   `}
                 >
-                  {/* LIGHT */}
                   <button
-                    onClick={() => {
-                      if (darkMode) toggleDarkMode();
-                    }}
+                    onClick={() => darkMode && toggleDarkMode()}
                     className="w-full flex items-center justify-between
                                px-3 py-2 text-sm
                                hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -187,11 +200,8 @@ export default function Navbar() {
                     {!darkMode && <Check size={16} />}
                   </button>
 
-                  {/* DARK */}
                   <button
-                    onClick={() => {
-                      if (!darkMode) toggleDarkMode();
-                    }}
+                    onClick={() => !darkMode && toggleDarkMode()}
                     className="w-full flex items-center justify-between
                                px-3 py-2 text-sm
                                hover:bg-gray-100 dark:hover:bg-gray-700"
