@@ -8,7 +8,6 @@ export default function WatchLaterButton({ videoId }) {
   const [loading, setLoading] = useState(true);
   const [isGuest, setIsGuest] = useState(false);
 
-  // Load saved status + user
   useEffect(() => {
     const load = async () => {
       try {
@@ -21,13 +20,14 @@ export default function WatchLaterButton({ videoId }) {
         const meData = await meRes.json().catch(() => ({}));
 
         setSaved(!!statusData.saved);
-        setIsGuest(!!meData.user?.isGuest);
+        setIsGuest(!meData.user || meData.user.isGuest);
       } catch (err) {
         console.error(err);
       } finally {
         setLoading(false);
       }
     };
+
     load();
   }, [videoId]);
 
@@ -35,12 +35,12 @@ export default function WatchLaterButton({ videoId }) {
     e.stopPropagation();
     if (loading) return;
 
+   
     if (isGuest) {
-      alert("Sign in to use Watch Later");
+      alert("You’re in guest mode. Sign in to use Watch Later.");
       return;
     }
 
-    // Optimistic toggle
     setSaved((prev) => !prev);
 
     try {
@@ -51,7 +51,6 @@ export default function WatchLaterButton({ videoId }) {
       });
     } catch (err) {
       console.error(err);
-      // revert on error
       setSaved((prev) => !prev);
     }
   };
@@ -60,12 +59,14 @@ export default function WatchLaterButton({ videoId }) {
     <button
       type="button"
       onClick={handleClick}
-      disabled={loading}
-      title={saved ? "Remove from Watch later" : "Save to Watch later"}
+      title={
+        saved ? "Remove from Watch Later" : "Save to Watch Later"
+      }
       className={`
         flex items-center justify-center
         w-11 h-11 rounded-full
         transition-all duration-200
+
         ${
           saved
             ? "bg-blue-600 text-white shadow-md"

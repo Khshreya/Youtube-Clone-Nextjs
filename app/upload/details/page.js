@@ -148,15 +148,18 @@ export default function UploadDetailsPage() {
               <Eye size={18} />
               <p className="font-medium">Preview</p>
             </div>
+<div className="flex justify-center">
+  <div className="w-[320px] max-w-full rounded-xl overflow-hidden bg-black">
+    <video
+      src={videoPreviewUrl}
+      controls
+      className="w-full h-[180px] object-contain"
+      style={{ filter: meta?.filter?.css || "none" }}
+    />
+  </div>
+</div>
 
-            <div className="rounded-xl overflow-hidden bg-black">
-              <video
-                src={videoPreviewUrl}
-                controls
-                className="w-full"
-                style={{ filter: meta?.filter?.css || "none" }}
-              />
-            </div>
+
 
             <div className="mt-2 text-xs text-gray-500">
               Duration: <span className="font-medium">{meta?.duration}</span>

@@ -113,126 +113,141 @@ export default function Navbar() {
           </button>
 
           {/* USER MENU */}
-          {user ? (
-            <div className="relative" ref={menuRef}>
-              <button
-                onClick={() => setOpenMenu((p) => !p)}
-                className="w-9 h-9 rounded-full bg-red-600 text-white
-                           flex items-center justify-center font-semibold"
-              >
-                {user.name?.[0]?.toUpperCase()}
-              </button>
+       {/* USER / GUEST MENU */}
+<div className="relative" ref={menuRef}>
+  <button
+    onClick={() => setOpenMenu((p) => !p)}
+    className="w-9 h-9 rounded-full bg-red-600 text-white
+               flex items-center justify-center font-semibold"
+  >
+    {user?.name ? user.name[0].toUpperCase() : "G"}
+  </button>
 
-              {/* DROPDOWN */}
-              <div
-                className={`
-                  absolute right-0 mt-2 w-56
-                  bg-white dark:bg-gray-800
-                  rounded-xl shadow-2xl
-                  border dark:border-gray-700
-                  overflow-hidden z-[60]
-                  transform transition-all duration-200 ease-out
-                  ${
-                    openMenu
-                      ? "opacity-100 scale-100 translate-y-0"
-                      : "opacity-0 scale-95 -translate-y-2 pointer-events-none"
-                  }
-                `}
-              >
-                {/* USER INFO */}
-                <div className="px-4 py-3">
-                  <p className="text-sm font-semibold">{user.name}</p>
-                  <p className="text-xs text-gray-500">{user.email}</p>
-                </div>
+  {/* DROPDOWN */}
+  <div
+    className={`
+      absolute right-0 mt-2 w-56
+      bg-white dark:bg-gray-800
+      rounded-xl shadow-2xl
+      border dark:border-gray-700
+      overflow-hidden z-[60]
+      transform transition-all duration-200 ease-out
+      ${
+        openMenu
+          ? "opacity-100 scale-100 translate-y-0"
+          : "opacity-0 scale-95 -translate-y-2 pointer-events-none"
+      }
+    `}
+  >
+    {/* USER / GUEST INFO */}
+    <div className="px-4 py-3">
+      <p className="text-sm font-semibold">
+        {user?.name ?? "Guest User"}
+      </p>
+      <p className="text-xs text-gray-500">
+        {user?.email ?? "Sign in to unlock all features"}
+      </p>
+    </div>
 
-                <div className="h-px bg-gray-200 dark:bg-gray-700" />
+    <div className="h-px bg-gray-200 dark:bg-gray-700" />
 
-                {/* SETTINGS */}
-                <button
-                  onClick={() => {
-                    setOpenMenu(false);
-                    router.push("/settings");
-                  }}
-                  className="w-full flex items-center gap-3
-                             px-4 py-2.5 text-sm
-                             hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                  <Settings size={18} />
-                  Settings
-                </button>
+    {/* SETTINGS (ONLY FOR LOGGED IN USER) */}
+    {user && (
+      <button
+        onClick={() => {
+          setOpenMenu(false);
+          router.push("/settings");
+        }}
+        className="w-full flex items-center gap-3
+                   px-4 py-2.5 text-sm
+                   hover:bg-gray-100 dark:hover:bg-gray-700"
+      >
+        <Settings size={18} />
+        Settings
+      </button>
+    )}
 
-                {/* THEME */}
-                <button
-                  onClick={() => setOpenThemeMenu((p) => !p)}
-                  className="w-full flex items-center justify-between
-                             px-4 py-2.5 text-sm
-                             hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                  <div className="flex items-center gap-3">
-                    <Palette size={18} />
-                    Change Theme
-                  </div>
-                  <ChevronRight size={16} />
-                </button>
+    {/* THEME */}
+    <button
+      onClick={() => setOpenThemeMenu((p) => !p)}
+      className="w-full flex items-center justify-between
+                 px-4 py-2.5 text-sm
+                 hover:bg-gray-100 dark:hover:bg-gray-700"
+    >
+      <div className="flex items-center gap-3">
+        <Palette size={18} />
+        Change Theme
+      </div>
+      <ChevronRight size={16} />
+    </button>
 
-                {/* THEME OPTIONS */}
-                <div
-                  className={`
-                    mx-2 mb-2 rounded-lg border dark:border-gray-700
-                    transform transition-all duration-200
-                    ${
-                      openThemeMenu
-                        ? "opacity-100 scale-100"
-                        : "opacity-0 scale-95 h-0 overflow-hidden pointer-events-none"
-                    }
-                  `}
-                >
-                  <button
-                    onClick={() => darkMode && toggleDarkMode()}
-                    className="w-full flex items-center justify-between
-                               px-3 py-2 text-sm
-                               hover:bg-gray-100 dark:hover:bg-gray-700"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Sun size={16} />
-                      Light Theme
-                    </div>
-                    {!darkMode && <Check size={16} />}
-                  </button>
+    {/* THEME OPTIONS */}
+    <div
+      className={`
+        mx-2 mb-2 rounded-lg border dark:border-gray-700
+        transform transition-all duration-200
+        ${
+          openThemeMenu
+            ? "opacity-100 scale-100"
+            : "opacity-0 scale-95 h-0 overflow-hidden pointer-events-none"
+        }
+      `}
+    >
+      <button
+        onClick={() => darkMode && toggleDarkMode()}
+        className="w-full flex items-center justify-between
+                   px-3 py-2 text-sm
+                   hover:bg-gray-100 dark:hover:bg-gray-700"
+      >
+        <div className="flex items-center gap-2">
+          <Sun size={16} />
+          Light Theme
+        </div>
+        {!darkMode && <Check size={16} />}
+      </button>
 
-                  <button
-                    onClick={() => !darkMode && toggleDarkMode()}
-                    className="w-full flex items-center justify-between
-                               px-3 py-2 text-sm
-                               hover:bg-gray-100 dark:hover:bg-gray-700"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Moon size={16} />
-                      Dark Theme
-                    </div>
-                    {darkMode && <Check size={16} />}
-                  </button>
-                </div>
+      <button
+        onClick={() => !darkMode && toggleDarkMode()}
+        className="w-full flex items-center justify-between
+                   px-3 py-2 text-sm
+                   hover:bg-gray-100 dark:hover:bg-gray-700"
+      >
+        <div className="flex items-center gap-2">
+          <Moon size={16} />
+          Dark Theme
+        </div>
+        {darkMode && <Check size={16} />}
+      </button>
+    </div>
 
-                <div className="h-px bg-gray-200 dark:bg-gray-700" />
+    <div className="h-px bg-gray-200 dark:bg-gray-700" />
 
-                {/* LOGOUT */}
-                <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-3
-                             px-4 py-2.5 text-sm text-red-600
-                             hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                  <LogOut size={18} />
-                  Logout
-                </button>
-              </div>
-            </div>
-          ) : (
-            <Link href="/login" className="px-3 py-1 border rounded">
-              Login
-            </Link>
-          )}
+    {/* GUEST → LOGIN */}
+    {!user && (
+      <Link
+        href="/login"
+        className="block px-4 py-2.5 text-sm
+                   hover:bg-gray-100 dark:hover:bg-gray-700"
+      >
+        Login
+      </Link>
+    )}
+
+    {/* LOGOUT (ONLY LOGGED IN USER) */}
+    {user && (
+      <button
+        onClick={handleLogout}
+        className="w-full flex items-center gap-3
+                   px-4 py-2.5 text-sm text-red-600
+                   hover:bg-gray-100 dark:hover:bg-gray-700"
+      >
+        <LogOut size={18} />
+        Logout
+      </button>
+    )}
+  </div>
+</div>
+
         </div>
       </div>
     </nav>

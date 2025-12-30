@@ -1,12 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Check } from "lucide-react";
 
 export default function SubscribeButton({ channel }) {
-  const router = useRouter();
-
   const [subscribed, setSubscribed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isGuest, setIsGuest] = useState(false);
@@ -15,9 +12,7 @@ export default function SubscribeButton({ channel }) {
     const load = async () => {
       try {
         const [statusRes, meRes] = await Promise.all([
-          fetch(
-            `/api/subscription/status?channel=${encodeURIComponent(channel)}`
-          ),
+          fetch(`/api/subscription/status?channel=${encodeURIComponent(channel)}`),
           fetch("/api/auth/me"),
         ]);
 
@@ -25,7 +20,7 @@ export default function SubscribeButton({ channel }) {
         const meData = await meRes.json().catch(() => ({}));
 
         setSubscribed(statusData.subscribed);
-        setIsGuest(!!meData.user?.isGuest);
+        setIsGuest(!meData.user || meData.user.isGuest);
       } catch (err) {
         console.error(err);
       } finally {
@@ -38,10 +33,12 @@ export default function SubscribeButton({ channel }) {
 
   const handleClick = async (e) => {
     e.stopPropagation();
+
     if (loading) return;
 
+    //  Guest message ONLY
     if (isGuest) {
-      router.push("/login");
+      alert("You’re in guest mode. Sign in to subscribe to channels.");
       return;
     }
 
@@ -57,9 +54,6 @@ export default function SubscribeButton({ channel }) {
       if (!res.ok) throw new Error("Subscription failed");
 
       setSubscribed((p) => !p);
-      try {
-        router.refresh();
-      } catch {}
     } catch (err) {
       console.error(err);
     } finally {
@@ -70,13 +64,11 @@ export default function SubscribeButton({ channel }) {
   return (
     <button
       onClick={handleClick}
-      disabled={loading}
       className={`
         inline-flex items-center gap-2
         px-4 py-1.5 rounded-full
         text-sm font-semibold
         transition-all duration-200
-        disabled:opacity-60 disabled:cursor-not-allowed
 
         ${
           subscribed

@@ -35,48 +35,58 @@ export default function RegisterForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      {error && <p className="text-red-500 text-sm">{error}</p>}
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {error && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+          <p className="text-red-600 dark:text-red-300 text-sm font-medium">{error}</p>
+        </div>
+      )}
 
       <div>
-        <label className="block text-sm font-medium">Name</label>
+        <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
+          Full Name
+        </label>
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
-          className="w-full border rounded px-3 py-2"
+          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-all duration-200"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium">Email</label>
+        <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
+          Email
+        </label>
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="w-full border rounded px-3 py-2"
+          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-all duration-200"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium">Password</label>
+        <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
+          Password
+        </label>
         <input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          className="w-full border rounded px-3 py-2"
+          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-all duration-200"
         />
       </div>
-
+      
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-blue-600 text-white py-2 rounded"
+        className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-3 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {loading ? "Creating account..." : "Register"}
+        {loading ? "Creating account..." : "Create Account"}
       </button>
     </form>
   );

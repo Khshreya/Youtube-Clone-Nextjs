@@ -53,21 +53,26 @@ export default function Sidebar() {
     <>
       {/* ================= MINI SIDEBAR (DESKTOP) ================= */}
       {!open && (
-        <aside className="hidden md:flex fixed left-0 top-14 z-20 w-[72px] h-[calc(100vh-56px)]
-                          bg-white dark:bg-gray-900 ">
+        <aside
+         className="hidden md:flex fixed left-3 top-14 z-20
+             w-[72px] h-[calc(100vh-56px)]
+             bg-white dark:bg-gray-900"
+        >
           <div className="flex flex-col items-center gap-6 py-4 w-full">
             {MINI_ITEMS.map(({ icon: Icon, label, href }) => (
               <Link
-  key={label}
-  href={href}
-  className="flex flex-col items-center gap-1 text-xs
-             text-gray-900 dark:text-gray-100
-             hover:bg-gray-100 dark:hover:bg-gray-800
-             px-2 py-2 rounded-lg"
->
-
+                key={label}
+                href={href}
+                className="flex flex-col items-center gap-1
+                           text-gray-900 dark:text-gray-100
+                           hover:bg-gray-100 dark:hover:bg-gray-800
+                           px-2 py-2 rounded-lg"
+              >
                 <Icon size={22} />
-                <span>{label}</span>
+                {/* 🔧 REAL FIX IS HERE */}
+                <span className="text-center text-[11px] leading-tight w-[64px]">
+                  {label}
+                </span>
               </Link>
             ))}
           </div>
@@ -91,12 +96,16 @@ export default function Sidebar() {
                        shadow-xl
                        overflow-y-auto sidebar-scroll"
           >
-            {/* 🔥 SIDEBAR HEADER (THIS FIXES YOUR ISSUE) */}
-            <div className="h-14 flex items-center gap-3 px-4 
-                            bg-white dark:bg-gray-900 sticky top-0 z-10">
+            {/* Sidebar Header */}
+            <div
+              className="h-14 flex items-center gap-3 px-4
+                         bg-white dark:bg-gray-900
+                         sticky top-0 z-10"
+            >
               <button
                 onClick={toggle}
-                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="p-2 rounded-full
+                           hover:bg-gray-100 dark:hover:bg-gray-800"
               >
                 ☰
               </button>
@@ -110,11 +119,15 @@ export default function Sidebar() {
                   key={label}
                   href={href}
                   onClick={toggle}
-                  className="flex items-center gap-5 px-4 py-2.5 rounded-lg
-                             hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                  className="flex items-center gap-5
+                             px-4 py-2.5 rounded-lg
+                             hover:bg-gray-100 dark:hover:bg-gray-800
+                             transition"
                 >
                   <Icon size={22} />
-                  <span className="text-sm font-medium">{label}</span>
+                  <span className="text-sm font-medium">
+                    {label}
+                  </span>
                 </Link>
               ))}
             </div>

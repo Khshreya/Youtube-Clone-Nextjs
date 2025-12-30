@@ -6,7 +6,7 @@ import LikeDislikeBar from "@/components/LikeDislikeBar";
 import WatchLaterButton from "@/components/WatchLaterButton";
 import SubscribeButton from "@/components/SubscribeButton";
 
-export default function ShortsFeed({ shorts }) {
+export default function ShortsFeed({ shorts, isGuest }) {
   const containerRefs = useRef([]);
   const videoRefs = useRef([]);
   const savedHistoryRef = useRef(new Set());
@@ -44,8 +44,10 @@ export default function ShortsFeed({ shorts }) {
     });
   }, [activeIndex]);
 
-  /* Save to history */
+  /* Save to history (ONLY IF LOGGED IN) */
   useEffect(() => {
+    if (isGuest) return; // ✅ guest mode
+
     const short = shorts[activeIndex];
     if (!short) return;
     if (savedHistoryRef.current.has(short.id)) return;
@@ -56,7 +58,7 @@ export default function ShortsFeed({ shorts }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ videoId: short.id }),
     }).catch(() => {});
-  }, [activeIndex, shorts]);
+  }, [activeIndex, shorts, isGuest]);
 
   return (
     <div className="h-[calc(100vh-56px)] overflow-y-scroll snap-y snap-mandatory">
@@ -107,29 +109,26 @@ export default function ShortsFeed({ shorts }) {
                 </div>
               )}
 
-              {/* RIGHT ACTIONS (LIKE / DISLIKE / WATCH LATER) */}
+              {/* RIGHT ACTIONS */}
               <div className="absolute right-3 bottom-24 z-50 pointer-events-auto flex flex-col items-center gap-5">
                 <LikeDislikeBar videoId={short.id} layout="vertical" />
                 <WatchLaterButton videoId={short.id} />
               </div>
 
-              {/* BOTTOM LEFT TEXT + SUBSCRIBE */}
-             {/* BOTTOM LEFT TEXT + SUBSCRIBE */}
-<div className="absolute bottom-6 left-4 right-4 z-50 text-white">
-  <h3 className="font-semibold text-lg leading-tight">
-    {short.title}
-  </h3>
+              {/* BOTTOM LEFT */}
+              <div className="absolute bottom-6 left-4 right-4 z-50 text-white">
+                <h3 className="font-semibold text-lg leading-tight">
+                  {short.title}
+                </h3>
 
-  <p className="text-sm opacity-80 mt-1">
-    @{short.channel}
-  </p>
+                <p className="text-sm opacity-80 mt-1">
+                  @{short.channel}
+                </p>
 
-  {/* SUBSCRIBE BELOW CHANNEL NAME */}
-  <div className="mt-3">
-    <SubscribeButton channel={short.channel} />
-  </div>
-</div>
-
+                <div className="mt-3">
+                  <SubscribeButton channel={short.channel} />
+                </div>
+              </div>
 
             </div>
           </div>
