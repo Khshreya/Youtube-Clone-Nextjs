@@ -44,7 +44,7 @@ export default function ShortsFeed({ shorts }) {
     });
   }, [activeIndex]);
 
-  /* ✅ SAVE HISTORY (SERVER DECIDES AUTH) */
+  /*  SAVEs HISTORY (SERVER DECIDES AUTH) */
   useEffect(() => {
     const short = shorts[activeIndex];
     if (!short) return;
