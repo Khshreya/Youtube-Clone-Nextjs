@@ -1,32 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUser } from "@/lib/auth";
 
-// OPTIONS handler (Vercel preflight)
-export async function OPTIONS() {
-  return NextResponse.json(
-    {},
-    {
-      status: 200,
-      headers: {
-        Allow: "POST, OPTIONS",
-      },
-    }
-  );
-}
-
-// POST handler
 export async function POST(req) {
   try {
-    const user = await getCurrentUser();
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "Login required" },
-        { status: 401 }
-      );
-    }
-
     const body = await req.json();
 
     const {
@@ -35,31 +11,34 @@ export async function POST(req) {
       thumbnail,
       contentType,
       duration,
+      channelName,
       editMetadata,
     } = body;
 
-    if (!title || !videoUrl || !thumbnail) {
+    if (!title || !videoUrl || !thumbnail || !channelName) {
       return NextResponse.json(
         { error: "Missing fields" },
         { status: 400 }
       );
     }
 
-    await prisma.video.create({
+    const video = await prisma.video.create({
       data: {
         title,
         videoUrl,
         thumbnail,
         duration: duration || "0:00",
-        channel: user.name,
         contentType,
+        channel: channelName, // ✅ THIS IS YOUR OWNER
         editMetadata,
       },
     });
 
-    return NextResponse.json({ success: true });
+    console.log("✅ Video saved:", video.id);
+
+    return NextResponse.json({ success: true, videoId: video.id });
   } catch (err) {
-    console.error("POST /api/videos failed", err);
+    console.error("🔥 Video save failed:", err);
     return NextResponse.json(
       { error: "Server error" },
       { status: 500 }

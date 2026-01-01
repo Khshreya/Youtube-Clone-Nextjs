@@ -1,34 +1,34 @@
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
 
-// GET → fetch reaction + like count
+/* ---------------- GET: reaction + like count ---------------- */
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const videoId = searchParams.get("videoId");
 
   const clerkUser = await currentUser();
-
   let reaction = null;
 
   if (clerkUser) {
-    const dbUser = await prisma.user.findUnique({
-      where: { clerkId: clerkUser.id },
-    });
+    const email = clerkUser.emailAddresses?.[0]?.emailAddress;
 
-    if (dbUser) {
-      const existing = await prisma.like.findUnique({
-        where: {
-          userId_videoId: {
-            userId: dbUser.id,
-            videoId,
-          },
-        },
+    if (email) {
+      const dbUser = await prisma.user.findUnique({
+        where: { email },
       });
-      reaction = existing?.value ?? null;
+
+      if (dbUser) {
+        const existing = await prisma.like.findUnique({
+          where: {
+            userId_videoId: {
+              userId: dbUser.id,
+              videoId,
+            },
+          },
+        });
+        reaction = existing?.value ?? null;
+      }
     }
   }
 
@@ -39,32 +39,32 @@ export async function GET(req) {
   return NextResponse.json({ reaction, likeCount });
 }
 
-// POST → persist ONLY for logged-in users
+/* ---------------- POST: like / dislike ---------------- */
 export async function POST(req) {
   const clerkUser = await currentUser();
   const { videoId, value } = await req.json();
 
-  
+  // Guest → ignore silently
   if (!clerkUser) {
     return NextResponse.json({ success: true });
   }
 
-  // Ensure Prisma user exists
-  let dbUser = await prisma.user.findUnique({
-    where: { clerkId: clerkUser.id },
-  });
+  const email =
+    clerkUser.emailAddresses?.[0]?.emailAddress ??
+    `${clerkUser.id}@clerk.user`;
 
-  if (!dbUser) {
-    dbUser = await prisma.user.create({
-      data: {
-        clerkId: clerkUser.id,
-        email:
-          clerkUser.emailAddresses?.[0]?.emailAddress ??
-          `${clerkUser.id}@clerk.user`,
-        name: clerkUser.fullName ?? "User",
-      },
-    });
-  }
+  // ✅ SAFE USER RESOLUTION (NO DUPLICATES)
+  const dbUser = await prisma.user.upsert({
+    where: { email },
+    update: {
+      clerkId: clerkUser.id,
+    },
+    create: {
+      clerkId: clerkUser.id,
+      email,
+      name: clerkUser.fullName ?? "User",
+    },
+  });
 
   // Remove reaction
   if (value === null) {

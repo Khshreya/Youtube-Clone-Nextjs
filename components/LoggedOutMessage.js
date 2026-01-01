@@ -86,7 +86,7 @@ export default function LoggedOutMessage({ type, isGuest = false }) {
 
       {!isGuest && (
         <Link
-          href="/sign-in"
+          href="/login"
           className="px-6 py-2 rounded-full border
                      text-blue-600 font-medium
                      hover:bg-blue-50"

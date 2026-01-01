@@ -1,8 +1,7 @@
 "use client";
 import {
   useUser,
-  SignInButton,
-  UserButton,
+  useClerk,
 } from "@clerk/nextjs";
 
 import { useEffect, useState, useRef } from "react";
@@ -27,21 +26,13 @@ export default function Navbar() {
   const darkMode = useUIStore((s) => s.darkMode);
   const toggleDarkMode = useUIStore((s) => s.toggleDarkMode);
 
-const { user, isSignedIn } = useUser();
+  const { user, isSignedIn } = useUser();
+  const { signOut } = useClerk(); // ✅ Correct import for signOut
 
   const [openMenu, setOpenMenu] = useState(false);
   const [openThemeMenu, setOpenThemeMenu] = useState(false);
 
   const menuRef = useRef(null);
-  
-
-  /* ---------------- FETCH USER ---------------- */
-  // useEffect(() => {
-  //   fetch("/api/auth/me")
-  //     .then((r) => r.json())
-  //     .then((d) => setUser(d?.user ?? null))
-  //     .catch(() => setUser(null));
-  // }, []);
 
   /* ---------------- CLOSE ON OUTSIDE CLICK ---------------- */
   useEffect(() => {
@@ -73,17 +64,15 @@ const { user, isSignedIn } = useUser();
     pathname.startsWith("/upload") ||
     pathname.startsWith("/settings") ||
     pathname.startsWith("/shorts") ||
-(isRestrictedSearchPage && !isSignedIn);
+    (isRestrictedSearchPage && !isSignedIn);
 
-
-  /* ---------------- LOGOUT ---------------- */
-  // const handleLogout = async () => {
-  //   await fetch("/api/auth/logout", { method: "POST" });
-  //   setOpenMenu(false);
-  //   setOpenThemeMenu(false);
-  //   router.push("/login");
-  //   router.refresh();
-  // };
+  /* ---------------- PROPER SIGN OUT ---------------- */
+  const handleSignOut = async () => {
+    await signOut();
+    setOpenMenu(false);
+    router.push("/login");
+    router.refresh();
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-900">
@@ -120,149 +109,162 @@ const { user, isSignedIn } = useUser();
             + Create
           </button>
 
-          {/* USER MENU */}
-       {/* USER / GUEST MENU */}
-<div className="relative" ref={menuRef}>
-{!isSignedIn && (
-  <SignInButton mode="modal">
-    <button
-      className="w-9 h-9 rounded-full bg-red-600 text-white
-                 flex items-center justify-center font-semibold"
-    >
-      G
-    </button>
-  </SignInButton>
-)}
+          {/* CUSTOM USER / GUEST MENU */}
+          <div className="relative" ref={menuRef}>
+            {/* GUEST BUTTON */}
+            {!isSignedIn && (
+              <button
+                onClick={() => router.push("/login")}
+                className="w-9 h-9 rounded-full bg-red-600 text-white
+                           flex items-center justify-center font-semibold"
+              >
+                G
+              </button>
+            )}
 
-{isSignedIn && <UserButton />}
+            {/* JUST PHOTO BUTTON */}
+            {isSignedIn && (
+              <button
+                onClick={() => setOpenMenu(!openMenu)}
+                className="w-10 h-10 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              >
+                {user?.imageUrl ? (
+                  <img
+                    src={user.imageUrl}
+                    alt="User profile"
+                    className="w-full h-full rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold text-sm">
+                    {user?.firstName?.[0]?.toUpperCase() || 
+                     user?.username?.[0]?.toUpperCase() || 
+                     user?.primaryEmailAddress?.emailAddress?.[0]?.toUpperCase() || 
+                     'U'}
+                  </div>
+                )}
+              </button>
+            )}
 
+            {/* FULL DROPDOWN */}
+            <div
+              className={`
+                absolute right-0 mt-2 w-56
+                bg-white dark:bg-gray-800
+                rounded-xl shadow-2xl
+                border dark:border-gray-700
+                overflow-hidden z-[60]
+                transform transition-all duration-200 ease-out
+                ${
+                  openMenu
+                    ? "opacity-100 scale-100 translate-y-0"
+                    : "opacity-0 scale-95 -translate-y-2 pointer-events-none"
+                }
+              `}
+            >
+              {/* USER INFO */}
+              <div className="px-4 py-3">
+                <p className="text-sm font-semibold truncate max-w-[200px]">
+                  {user?.fullName || user?.username || user?.primaryEmailAddress?.emailAddress?.split('@')[0] || "User"}
+                </p>
+                <p className="text-xs text-gray-500 truncate">
+                  {user?.primaryEmailAddress?.emailAddress || 
+                   user?.emailAddresses?.[0]?.emailAddress || 
+                   'No email'}
+                </p>
+              </div>
 
-  {/* DROPDOWN */}
-  <div
-    className={`
-      absolute right-0 mt-2 w-56
-      bg-white dark:bg-gray-800
-      rounded-xl shadow-2xl
-      border dark:border-gray-700
-      overflow-hidden z-[60]
-      transform transition-all duration-200 ease-out
-      ${
-        openMenu
-          ? "opacity-100 scale-100 translate-y-0"
-          : "opacity-0 scale-95 -translate-y-2 pointer-events-none"
-      }
-    `}
-  >
-    {/* USER / GUEST INFO */}
-    <div className="px-4 py-3">
-     <p className="text-sm font-semibold">
-  {isSignedIn ? user.fullName : "Guest User"}
-</p>
-<p className="text-xs text-gray-500">
-  {isSignedIn ? user.primaryEmailAddress?.emailAddress : "Sign in to unlock all features"}
-</p>
+              <div className="h-px bg-gray-200 dark:bg-gray-700" />
 
-    </div>
+              {/* SETTINGS */}
+              {isSignedIn && (
+                <button
+                  onClick={() => {
+                    setOpenMenu(false);
+                    router.push("/settings");
+                  }}
+                  className="w-full flex items-center gap-3
+                             px-4 py-2.5 text-sm
+                             hover:bg-gray-100 dark:hover:bg-gray-700
+                             transition-colors"
+                >
+                  <Settings size={18} />
+                  Settings
+                </button>
+              )}
 
-    <div className="h-px bg-gray-200 dark:bg-gray-700" />
+              {/* THEME */}
+              <button
+                onClick={() => setOpenThemeMenu((p) => !p)}
+                className="w-full flex items-center justify-between
+                           px-4 py-2.5 text-sm
+                           hover:bg-gray-100 dark:hover:bg-gray-700
+                           transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <Palette size={18} />
+                  Change Theme
+                </div>
+                <ChevronRight size={16} />
+              </button>
 
-    {/* SETTINGS (ONLY FOR LOGGED IN USER) */}
-    {user && (
-      <button
-        onClick={() => {
-          setOpenMenu(false);
-          router.push("/settings");
-        }}
-        className="w-full flex items-center gap-3
-                   px-4 py-2.5 text-sm
-                   hover:bg-gray-100 dark:hover:bg-gray-700"
-      >
-        <Settings size={18} />
-        Settings
-      </button>
-    )}
+              {/* THEME OPTIONS */}
+              <div
+                className={`
+                  mx-2 mb-2 rounded-lg border dark:border-gray-700
+                  transform transition-all duration-200
+                  ${
+                    openThemeMenu
+                      ? "opacity-100 scale-100"
+                      : "opacity-0 scale-95 h-0 overflow-hidden pointer-events-none"
+                  }
+                `}
+              >
+                <button
+                  onClick={() => darkMode && toggleDarkMode()}
+                  className="w-full flex items-center justify-between
+                             px-3 py-2 text-sm
+                             hover:bg-gray-100 dark:hover:bg-gray-700
+                             transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <Sun size={16} />
+                    Light Theme
+                  </div>
+                  {!darkMode && <Check size={16} />}
+                </button>
 
-    {/* THEME */}
-    <button
-      onClick={() => setOpenThemeMenu((p) => !p)}
-      className="w-full flex items-center justify-between
-                 px-4 py-2.5 text-sm
-                 hover:bg-gray-100 dark:hover:bg-gray-700"
-    >
-      <div className="flex items-center gap-3">
-        <Palette size={18} />
-        Change Theme
-      </div>
-      <ChevronRight size={16} />
-    </button>
+                <button
+                  onClick={() => !darkMode && toggleDarkMode()}
+                  className="w-full flex items-center justify-between
+                             px-3 py-2 text-sm
+                             hover:bg-gray-100 dark:hover:bg-gray-700
+                             transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <Moon size={16} />
+                    Dark Theme
+                  </div>
+                  {darkMode && <Check size={16} />}
+                </button>
+              </div>
 
-    {/* THEME OPTIONS */}
-    <div
-      className={`
-        mx-2 mb-2 rounded-lg border dark:border-gray-700
-        transform transition-all duration-200
-        ${
-          openThemeMenu
-            ? "opacity-100 scale-100"
-            : "opacity-0 scale-95 h-0 overflow-hidden pointer-events-none"
-        }
-      `}
-    >
-      <button
-        onClick={() => darkMode && toggleDarkMode()}
-        className="w-full flex items-center justify-between
-                   px-3 py-2 text-sm
-                   hover:bg-gray-100 dark:hover:bg-gray-700"
-      >
-        <div className="flex items-center gap-2">
-          <Sun size={16} />
-          Light Theme
-        </div>
-        {!darkMode && <Check size={16} />}
-      </button>
+              <div className="h-px bg-gray-200 dark:bg-gray-700" />
 
-      <button
-        onClick={() => !darkMode && toggleDarkMode()}
-        className="w-full flex items-center justify-between
-                   px-3 py-2 text-sm
-                   hover:bg-gray-100 dark:hover:bg-gray-700"
-      >
-        <div className="flex items-center gap-2">
-          <Moon size={16} />
-          Dark Theme
-        </div>
-        {darkMode && <Check size={16} />}
-      </button>
-    </div>
-
-    <div className="h-px bg-gray-200 dark:bg-gray-700" />
-
-    {/* GUEST → LOGIN */}
-    {/* {!user && (
-      <Link
-        href="/login"
-        className="block px-4 py-2.5 text-sm
-                   hover:bg-gray-100 dark:hover:bg-gray-700"
-      >
-        Login
-      </Link>
-    )} */}
-
-    {/* LOGOUT (ONLY LOGGED IN USER) */}
-    {/* {user && (
-      <button
-        onClick={handleLogout}
-        className="w-full flex items-center gap-3
-                   px-4 py-2.5 text-sm text-red-600
-                   hover:bg-gray-100 dark:hover:bg-gray-700"
-      >
-        <LogOut size={18} />
-        Logout
-      </button>
-    )} */}
-  </div>
-</div>
-
+              {/* SIGN OUT */}
+              {isSignedIn && (
+                <button
+                  onClick={handleSignOut}
+                  className="w-full flex items-center gap-3
+                             px-4 py-2.5 text-sm text-red-600
+                             hover:bg-gray-100 dark:hover:bg-gray-700
+                             transition-colors"
+                >
+                  <LogOut size={18} />
+                  Sign out
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </nav>

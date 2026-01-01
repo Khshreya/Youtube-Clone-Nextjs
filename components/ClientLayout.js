@@ -11,7 +11,7 @@ export default function ClientLayout({ children }) {
   const pathname = usePathname();
 
   const isAuthPage =
-    pathname === "/sign-in" || pathname === "/sign-up";
+    pathname === "/login" || pathname === "/signup";
 
   return (
     <ThemeWrapper>

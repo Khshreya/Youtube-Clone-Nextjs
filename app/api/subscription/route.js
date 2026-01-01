@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
 
-// SUBSCRIBE
+/* ---------------- SUBSCRIBE ---------------- */
 export async function POST(req) {
   const clerkUser = await currentUser();
   if (!clerkUser) {
@@ -17,21 +17,22 @@ export async function POST(req) {
     return NextResponse.json({ error: "Channel missing" }, { status: 400 });
   }
 
-  let user = await prisma.user.findUnique({
-    where: { clerkId: clerkUser.id },
-  });
+  const email =
+    clerkUser.emailAddresses?.[0]?.emailAddress ??
+    `${clerkUser.id}@clerk.user`;
 
-  if (!user) {
-    user = await prisma.user.create({
-      data: {
-        clerkId: clerkUser.id,
-        email:
-          clerkUser.emailAddresses?.[0]?.emailAddress ??
-          `${clerkUser.id}@clerk.user`,
-        name: clerkUser.fullName ?? "User",
-      },
-    });
-  }
+  // ✅ SAFE USER RESOLUTION
+  const user = await prisma.user.upsert({
+    where: { email },
+    update: {
+      clerkId: clerkUser.id,
+    },
+    create: {
+      clerkId: clerkUser.id,
+      email,
+      name: clerkUser.fullName ?? "User",
+    },
+  });
 
   await prisma.subscription.upsert({
     where: {
@@ -50,7 +51,7 @@ export async function POST(req) {
   return NextResponse.json({ success: true });
 }
 
-// UNSUBSCRIBE
+/* ---------------- UNSUBSCRIBE ---------------- */
 export async function DELETE(req) {
   const clerkUser = await currentUser();
   if (!clerkUser) {
@@ -58,9 +59,16 @@ export async function DELETE(req) {
   }
 
   const { channel } = await req.json();
+  if (!channel) {
+    return NextResponse.json({ success: false });
+  }
+
+  const email =
+    clerkUser.emailAddresses?.[0]?.emailAddress ??
+    `${clerkUser.id}@clerk.user`;
 
   const user = await prisma.user.findUnique({
-    where: { clerkId: clerkUser.id },
+    where: { email },
   });
 
   if (!user) {

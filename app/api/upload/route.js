@@ -5,7 +5,7 @@ import { getCurrentUser } from "@/lib/auth";
 
 export async function POST(req) {
   const user = await getCurrentUser();
-  if (!user || user.isGuest) {
+  if (!user) {
     return NextResponse.json({ error: "Login required" }, { status: 401 });
   }
 
@@ -16,7 +16,7 @@ export async function POST(req) {
   const thumbnailFile = formData.get("thumbnail");
   const contentType = formData.get("contentType");
 
-  // Upload thumbnail
+  /* ---------- Upload thumbnail ---------- */
   const thumbBuffer = Buffer.from(await thumbnailFile.arrayBuffer());
   const thumbUpload = await new Promise((resolve, reject) => {
     cloudinary.uploader.upload_stream(
@@ -25,7 +25,7 @@ export async function POST(req) {
     ).end(thumbBuffer);
   });
 
-  // Upload video
+  /* ---------- Upload video ---------- */
   const videoBuffer = Buffer.from(await videoFile.arrayBuffer());
   const videoUpload = await new Promise((resolve, reject) => {
     cloudinary.uploader.upload_stream(
@@ -37,19 +37,19 @@ export async function POST(req) {
     ).end(videoBuffer);
   });
 
-const body = await req.json();
+  /* ---------- SAVE TO DATABASE (FIXED) ---------- */
+  const video = await prisma.video.create({
+    data: {
+      title,
+      videoUrl: videoUpload.secure_url,   // ✅ Cloudinary URL
+      thumbnail: thumbUpload.secure_url,   // ✅ Cloudinary URL
+      duration: "0:00",
+      channel: user.name ?? "Unknown",
+      contentType,
+    },
+  });
 
-await prisma.video.create({
-  data: {
-    title: body.title,
-    videoUrl: body.videoUrl,
-    thumbnail: body.thumbnail,
-    duration: body.duration || "0:00", // ✅ FIX
-    channel: user.name,
-    contentType: body.contentType,
-    editMetadata: body.editMetadata,
-  },
-});
+  console.log("Video saved:", video.id);
 
   return NextResponse.json({ success: true });
 }

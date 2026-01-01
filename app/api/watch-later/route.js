@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
 
-// ADD
+/* ---------------- ADD (POST) ---------------- */
 export async function POST(req) {
   const clerkUser = await currentUser();
   if (!clerkUser) {
@@ -14,21 +14,22 @@ export async function POST(req) {
 
   const { videoId } = await req.json();
 
-  let user = await prisma.user.findUnique({
-    where: { clerkId: clerkUser.id },
-  });
+  const email =
+    clerkUser.emailAddresses?.[0]?.emailAddress ??
+    `${clerkUser.id}@clerk.user`;
 
-  if (!user) {
-    user = await prisma.user.create({
-      data: {
-        clerkId: clerkUser.id,
-        email:
-          clerkUser.emailAddresses?.[0]?.emailAddress ??
-          `${clerkUser.id}@clerk.user`,
-        name: clerkUser.fullName ?? "User",
-      },
-    });
-  }
+  // ✅ SAFE USER RESOLUTION (NO DUPLICATES)
+  const user = await prisma.user.upsert({
+    where: { email },
+    update: {
+      clerkId: clerkUser.id,
+    },
+    create: {
+      clerkId: clerkUser.id,
+      email,
+      name: clerkUser.fullName ?? "User",
+    },
+  });
 
   await prisma.watchLater.upsert({
     where: {
@@ -47,7 +48,7 @@ export async function POST(req) {
   return NextResponse.json({ saved: true });
 }
 
-// REMOVE
+/* ---------------- REMOVE (DELETE) ---------------- */
 export async function DELETE(req) {
   const clerkUser = await currentUser();
   if (!clerkUser) {
@@ -56,8 +57,12 @@ export async function DELETE(req) {
 
   const { videoId } = await req.json();
 
+  const email =
+    clerkUser.emailAddresses?.[0]?.emailAddress ??
+    `${clerkUser.id}@clerk.user`;
+
   const user = await prisma.user.findUnique({
-    where: { clerkId: clerkUser.id },
+    where: { email },
   });
 
   if (!user) {
@@ -65,8 +70,45 @@ export async function DELETE(req) {
   }
 
   await prisma.watchLater.deleteMany({
-    where: { userId: user.id, videoId },
+    where: {
+      userId: user.id,
+      videoId,
+    },
   });
 
   return NextResponse.json({ saved: false });
+}
+
+/* ---------------- STATUS (GET) ---------------- */
+export async function GET(req) {
+  const clerkUser = await currentUser();
+  if (!clerkUser) {
+    return NextResponse.json({ saved: false });
+  }
+
+  const { searchParams } = new URL(req.url);
+  const videoId = searchParams.get("videoId");
+
+  const email =
+    clerkUser.emailAddresses?.[0]?.emailAddress ??
+    `${clerkUser.id}@clerk.user`;
+
+  const user = await prisma.user.findUnique({
+    where: { email },
+  });
+
+  if (!user) {
+    return NextResponse.json({ saved: false });
+  }
+
+  const exists = await prisma.watchLater.findUnique({
+    where: {
+      userId_videoId: {
+        userId: user.id,
+        videoId,
+      },
+    },
+  });
+
+  return NextResponse.json({ saved: !!exists });
 }

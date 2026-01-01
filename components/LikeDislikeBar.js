@@ -23,20 +23,26 @@ export default function LikeDislikeBar({ videoId, layout = "horizontal" }) {
     if (loading) return;
     setLoading(true);
 
-    let newReaction = reaction;
-    let newCount = likeCount;
+    // ⛳ store previous state (for rollback)
+    const prevReaction = reaction;
+    const prevCount = likeCount;
+
+    let nextReaction = reaction;
+    let nextCount = likeCount;
 
     if (reaction === value) {
-      newReaction = null;
-      if (value === 1) newCount -= 1;
+      // toggle off
+      nextReaction = null;
+      if (value === 1) nextCount -= 1;
     } else {
-      if (reaction === 1) newCount -= 1;
-      if (value === 1) newCount += 1;
-      newReaction = value;
+      // switch reaction
+      if (reaction === 1) nextCount -= 1;
+      if (value === 1) nextCount += 1;
+      nextReaction = value;
     }
 
-    setReaction(newReaction);
-    setLikeCount(newCount);
+    setReaction(nextReaction);
+    setLikeCount(nextCount);
 
     try {
       await fetch("/api/like", {
@@ -44,12 +50,13 @@ export default function LikeDislikeBar({ videoId, layout = "horizontal" }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           videoId,
-          value: newReaction,
+          value: nextReaction,
         }),
       });
     } catch {
-      setReaction(reaction);
-      setLikeCount(likeCount);
+      // 🔄 rollback on failure
+      setReaction(prevReaction);
+      setLikeCount(prevCount);
     } finally {
       setLoading(false);
     }
@@ -68,10 +75,8 @@ export default function LikeDislikeBar({ videoId, layout = "horizontal" }) {
       {/* LIKE */}
       <button
         onClick={() => handleClick(1)}
-        className={`
-          flex flex-col items-center justify-center
-          w-12 h-12 rounded-full
-          transition
+        className={`flex flex-col items-center justify-center
+          w-12 h-12 rounded-full transition
           ${
             reaction === 1
               ? "bg-blue-600 text-white"
@@ -86,10 +91,8 @@ export default function LikeDislikeBar({ videoId, layout = "horizontal" }) {
       {/* DISLIKE */}
       <button
         onClick={() => handleClick(-1)}
-        className={`
-          flex items-center justify-center
-          w-12 h-12 rounded-full
-          transition
+        className={`flex items-center justify-center
+          w-12 h-12 rounded-full transition
           ${
             reaction === -1
               ? "bg-gray-800 text-white"

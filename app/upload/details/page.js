@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ArrowLeft, Eye, Type, UploadCloud } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
 
 const CLOUD_NAME = "dr0d88x1m";
 const UPLOAD_PRESET = "youtube_clone_unsigned";
@@ -54,18 +55,16 @@ const getVideoDuration = (file) =>
 
 /* ---------------- PAGE ---------------- */
 export default function UploadDetailsPage() {
+  const { user } = useUser();
+
   const [title, setTitle] = useState("");
   const [uploading, setUploading] = useState(false);
-
   const [videoPreviewUrl, setVideoPreviewUrl] = useState(null);
   const [meta, setMeta] = useState(null);
   const [uploadData, setUploadData] = useState(null);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-
     const data = window.__uploadData;
-
     if (!data || !data.videoFile) {
       window.location.href = "/upload";
       return;
@@ -73,17 +72,9 @@ export default function UploadDetailsPage() {
 
     const init = async () => {
       const duration = await getVideoDuration(data.videoFile);
-
-      const updatedMeta = {
-        ...data.meta,
-        duration,
-      };
-
       setUploadData(data);
-      setMeta(updatedMeta);
-
-      const url = URL.createObjectURL(data.videoFile);
-      setVideoPreviewUrl(url);
+      setMeta({ ...data.meta, duration });
+      setVideoPreviewUrl(URL.createObjectURL(data.videoFile));
     };
 
     init();
@@ -98,7 +89,7 @@ export default function UploadDetailsPage() {
       const videoUrl = await uploadVideoToCloudinary(uploadData.videoFile);
       const thumbUrl = await uploadImageToCloudinary(uploadData.thumbnailFile);
 
-      await fetch("/api/videos", {
+      const res = await fetch("/api/videos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -107,15 +98,21 @@ export default function UploadDetailsPage() {
           thumbnail: thumbUrl,
           contentType: meta.contentType,
           duration: meta.duration,
-          editMetadata: { filter: meta.filter?.name },
+
+          // 🔥 USER INFO SENT EXPLICITLY
+          clerkId: user?.id || null,
+          channelName: user?.fullName || "Guest",
         }),
       });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Save failed");
 
       delete window.__uploadData;
       alert("Video published successfully");
       window.location.href = "/";
     } catch (err) {
-      console.error(err);
+      console.error("Publish failed:", err);
       alert("Publish failed");
     } finally {
       setUploading(false);
@@ -129,7 +126,6 @@ export default function UploadDetailsPage() {
   return (
     <div className="pt-24 min-h-screen bg-gray-100 dark:bg-gray-900 px-4">
       <div className="mx-auto max-w-3xl">
-        {/* HEADER */}
         <div className="flex items-center gap-3 mb-6">
           <button
             onClick={() => (window.location.href = "/upload")}
@@ -140,33 +136,28 @@ export default function UploadDetailsPage() {
           <h1 className="text-xl font-semibold">Review & publish</h1>
         </div>
 
-        {/* CARD */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 space-y-8">
-          {/* PREVIEW */}
           <div>
             <div className="flex items-center gap-2 mb-3">
               <Eye size={18} />
               <p className="font-medium">Preview</p>
             </div>
-<div className="flex justify-center">
-  <div className="w-[320px] max-w-full rounded-xl overflow-hidden bg-black">
-    <video
-      src={videoPreviewUrl}
-      controls
-      className="w-full h-[180px] object-contain"
-      style={{ filter: meta?.filter?.css || "none" }}
-    />
-  </div>
-</div>
 
-
+            <div className="flex justify-center">
+              <div className="w-[320px] rounded-xl overflow-hidden bg-black">
+                <video
+                  src={videoPreviewUrl}
+                  controls
+                  className="w-full h-[180px] object-contain"
+                />
+              </div>
+            </div>
 
             <div className="mt-2 text-xs text-gray-500">
               Duration: <span className="font-medium">{meta?.duration}</span>
             </div>
           </div>
 
-          {/* CAPTION */}
           <div>
             <div className="flex items-center gap-2 mb-2">
               <Type size={18} />
@@ -176,24 +167,20 @@ export default function UploadDetailsPage() {
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Write a caption for your video"
-              className="w-full px-4 py-2.5 rounded-lg bg-white dark:bg-gray-700
-                         text-gray-900 dark:text-white border border-gray-300
-                         dark:border-gray-600 focus:ring-2 focus:ring-red-500"
+              placeholder="Write a caption"
+              className="w-full px-4 py-2.5 rounded-lg bg-white dark:bg-gray-700"
             />
           </div>
 
-          {/* ACTION */}
           <div className="flex justify-end">
             <button
               disabled={uploading}
               onClick={publish}
-              className={`px-7 py-2.5 rounded-full text-sm font-medium transition
-                ${
-                  uploading
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-red-600 hover:bg-red-700 text-white"
-                }`}
+              className={`px-7 py-2.5 rounded-full text-sm font-medium ${
+                uploading
+                  ? "bg-gray-400"
+                  : "bg-red-600 hover:bg-red-700 text-white"
+              }`}
             >
               <UploadCloud size={16} />
               {uploading ? "Publishing…" : "Publish"}
