@@ -6,21 +6,17 @@ import { Check } from "lucide-react";
 export default function SubscribeButton({ channel }) {
   const [subscribed, setSubscribed] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [isGuest, setIsGuest] = useState(false);
 
+  // Load subscription status
   useEffect(() => {
     const load = async () => {
       try {
-        const [statusRes, meRes] = await Promise.all([
-          fetch(`/api/subscription/status?channel=${encodeURIComponent(channel)}`),
-          fetch("/api/auth/me"),
-        ]);
-
-        const statusData = await statusRes.json();
-        const meData = await meRes.json().catch(() => ({}));
-
-        setSubscribed(statusData.subscribed);
-        setIsGuest(!meData.user || meData.user.isGuest);
+        const res = await fetch(
+          `/api/subscription/status?channel=${encodeURIComponent(channel)}`,
+          { credentials: "include" } // REQUIRED
+        );
+        const data = await res.json();
+        setSubscribed(!!data.subscribed);
       } catch (err) {
         console.error(err);
       } finally {
@@ -33,29 +29,29 @@ export default function SubscribeButton({ channel }) {
 
   const handleClick = async (e) => {
     e.stopPropagation();
-
     if (loading) return;
 
-    //  Guest message ONLY
-    if (isGuest) {
-      alert("You’re in guest mode. Sign in to subscribe to channels.");
-      return;
-    }
-
+    const next = !subscribed;
+    setSubscribed(next); // optimistic UI
     setLoading(true);
 
     try {
       const res = await fetch("/api/subscription", {
-        method: subscribed ? "DELETE" : "POST",
+        method: next ? "POST" : "DELETE",
+        credentials: "include", // REQUIRED
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ channel }),
       });
 
-      if (!res.ok) throw new Error("Subscription failed");
-
-      setSubscribed((p) => !p);
+      if (!res.ok) {
+        setSubscribed(!next); // rollback
+        if (res.status === 401 || res.status === 403) {
+          alert("Sign in to subscribe to channels");
+        }
+      }
     } catch (err) {
       console.error(err);
+      setSubscribed(!next);
     } finally {
       setLoading(false);
     }
@@ -66,10 +62,8 @@ export default function SubscribeButton({ channel }) {
       onClick={handleClick}
       className={`
         inline-flex items-center gap-2
-        px-4 py-1.5 rounded-full
-        text-sm font-semibold
-        transition-all duration-200
-
+        px-4 py-1.5 rounded-full text-sm font-semibold
+        transition
         ${
           subscribed
             ? "bg-gray-200 text-gray-800 hover:bg-gray-300"

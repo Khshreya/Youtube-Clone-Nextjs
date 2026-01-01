@@ -6,7 +6,7 @@ import LikeDislikeBar from "@/components/LikeDislikeBar";
 import WatchLaterButton from "@/components/WatchLaterButton";
 import SubscribeButton from "@/components/SubscribeButton";
 
-export default function ShortsFeed({ shorts, isGuest }) {
+export default function ShortsFeed({ shorts }) {
   const containerRefs = useRef([]);
   const videoRefs = useRef([]);
   const savedHistoryRef = useRef(new Set());
@@ -31,7 +31,7 @@ export default function ShortsFeed({ shorts, isGuest }) {
     return () => observer.disconnect();
   }, []);
 
-  /* Play / Pause local videos */
+  /* Play / Pause */
   useEffect(() => {
     videoRefs.current.forEach((video, i) => {
       if (!video) return;
@@ -44,21 +44,21 @@ export default function ShortsFeed({ shorts, isGuest }) {
     });
   }, [activeIndex]);
 
-  /* Save to history (ONLY IF LOGGED IN) */
+  /* ✅ SAVE HISTORY (SERVER DECIDES AUTH) */
   useEffect(() => {
-    if (isGuest) return; // ✅ guest mode
-
     const short = shorts[activeIndex];
     if (!short) return;
+
     if (savedHistoryRef.current.has(short.id)) return;
 
     savedHistoryRef.current.add(short.id);
+
     fetch("/api/history", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ videoId: short.id }),
     }).catch(() => {});
-  }, [activeIndex, shorts, isGuest]);
+  }, [activeIndex, shorts]);
 
   return (
     <div className="h-[calc(100vh-56px)] overflow-y-scroll snap-y snap-mandatory">

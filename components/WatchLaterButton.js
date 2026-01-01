@@ -6,21 +6,17 @@ import { Clock } from "lucide-react";
 export default function WatchLaterButton({ videoId }) {
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [isGuest, setIsGuest] = useState(false);
 
+  // Load saved state
   useEffect(() => {
     const load = async () => {
       try {
-        const [statusRes, meRes] = await Promise.all([
-          fetch(`/api/watch-later/status?videoId=${videoId}`),
-          fetch("/api/auth/me"),
-        ]);
-
-        const statusData = await statusRes.json();
-        const meData = await meRes.json().catch(() => ({}));
-
-        setSaved(!!statusData.saved);
-        setIsGuest(!meData.user || meData.user.isGuest);
+        const res = await fetch(
+          `/api/watch-later/status?videoId=${videoId}`,
+          { credentials: "include" } //  REQUIRED
+        );
+        const data = await res.json();
+        setSaved(!!data.saved);
       } catch (err) {
         console.error(err);
       } finally {
@@ -35,42 +31,38 @@ export default function WatchLaterButton({ videoId }) {
     e.stopPropagation();
     if (loading) return;
 
-   
-    if (isGuest) {
-      alert("You’re in guest mode. Sign in to use Watch Later.");
-      return;
-    }
-
-    setSaved((prev) => !prev);
+    const next = !saved;
+    setSaved(next); // optimistic UI
 
     try {
-      await fetch("/api/watch-later", {
-        method: saved ? "DELETE" : "POST",
+      const res = await fetch("/api/watch-later", {
+        method: next ? "POST" : "DELETE",
+        credentials: "include", // REQUIRED
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ videoId }),
       });
+
+      if (!res.ok) {
+        setSaved(!next); // rollback
+        if (res.status === 401 || res.status === 403) {
+          alert("Sign in to use Watch Later");
+        }
+      }
     } catch (err) {
       console.error(err);
-      setSaved((prev) => !prev);
+      setSaved(!next);
     }
   };
 
   return (
     <button
-      type="button"
       onClick={handleClick}
-      title={
-        saved ? "Remove from Watch Later" : "Save to Watch Later"
-      }
-      className={`
-        flex items-center justify-center
-        w-11 h-11 rounded-full
-        transition-all duration-200
-
+      title={saved ? "Remove from Watch Later" : "Save to Watch Later"}
+      className={`w-11 h-11 rounded-full flex items-center justify-center transition
         ${
           saved
-            ? "bg-blue-600 text-white shadow-md"
-            : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
+            ? "bg-blue-600 text-white"
+            : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
         }
       `}
     >

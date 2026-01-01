@@ -8,30 +8,16 @@ datasource db {
 }
 
 /**
- * ================= SESSION =================
- */
-model Session {
-  id        String   @id @default(uuid())
-  userId    String
-  createdAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-}
-
-/**
  * ================= USER =================
+ * Auth handled by Clerk
  */
 model User {
   id        String   @id @default(uuid())
-  name      String
+  clerkId   String?  @unique // optional for safe migration
+  name      String?
   email     String   @unique
-  password  String
-  isGuest   Boolean  @default(false)
   createdAt DateTime @default(now())
 
-  sessions      Session[]
   history       History[]
   watchLater    WatchLater[]
   subscriptions Subscription[]

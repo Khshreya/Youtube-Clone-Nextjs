@@ -1,22 +1,35 @@
-import { getCurrentUser } from "@/lib/auth";
 import LoggedOutMessage from "@/components/LoggedOutMessage";
 import UploadClient from "./upload-client";
+import { currentUser } from "@clerk/nextjs/server";
+import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
 export default async function UploadPage() {
-  const user = await getCurrentUser();
+  //  Clerk auth (single source of truth)
+  const clerkUser = await currentUser();
 
-  //  Logged out
-  if (!user) {
+  if (!clerkUser) {
     return <LoggedOutMessage type="upload" />;
   }
 
-  //  Guest
-  if (user.isGuest) {
-    return <LoggedOutMessage type="upload" isGuest />;
+  //  Resolve / create Prisma user
+  let user = await prisma.user.findUnique({
+    where: { clerkId: clerkUser.id },
+  });
+
+  if (!user) {
+    user = await prisma.user.create({
+      data: {
+        clerkId: clerkUser.id,
+        email:
+          clerkUser.emailAddresses?.[0]?.emailAddress ??
+          `${clerkUser.id}@clerk.user`,
+        name: clerkUser.fullName ?? "User",
+      },
+    });
   }
 
-  //  Real user
+  //  Logged-in real user
   return <UploadClient />;
 }

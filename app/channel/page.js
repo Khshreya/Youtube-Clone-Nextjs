@@ -1,41 +1,43 @@
 import { prisma } from "@/lib/prisma";
-import { getCurrentUser } from "@/lib/auth";
-import { redirect } from "next/navigation";
 import VideoGridClient from "@/components/VideoGridClient";
 import LoggedOutMessage from "@/components/LoggedOutMessage";
+import { currentUser } from "@clerk/nextjs/server";
 
 export const dynamic = "force-dynamic";
 
 export default async function MyChannelPage() {
-  const user = await getCurrentUser();
+  //  Check Clerk login
+  const clerkUser = await currentUser();
 
-  // Not logged in
-  if (!user) {
+  if (!clerkUser) {
     return <LoggedOutMessage type="channel" />;
   }
 
-  //  Guest user
-  if (user.isGuest) {
-    return (
-      <LoggedOutMessage
-        type="channel"
-        isGuest
-      />
-    );
+  //  Resolve / create Prisma user
+  let user = await prisma.user.findUnique({
+    where: { clerkId: clerkUser.id },
+  });
+
+  if (!user) {
+    user = await prisma.user.create({
+      data: {
+        clerkId: clerkUser.id,
+        email:
+          clerkUser.emailAddresses?.[0]?.emailAddress ??
+          `${clerkUser.id}@clerk.user`,
+        name: clerkUser.fullName ?? "User",
+      },
+    });
   }
 
-  //  Logged-in real user
+  //  Fetch channel data
   const [videos, subscriberCount] = await Promise.all([
     prisma.video.findMany({
-      where: {
-        channel: user.name,
-      },
+      where: { channel: user.name },
       orderBy: { createdAt: "desc" },
     }),
     prisma.subscription.count({
-      where: {
-        channel: user.name,
-      },
+      where: { channel: user.name },
     }),
   ]);
 

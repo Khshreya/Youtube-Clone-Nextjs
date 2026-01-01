@@ -1,28 +1,36 @@
 import { prisma } from "@/lib/prisma";
-import { getCurrentUser } from "@/lib/auth";
 import SubscriptionsClient from "./SubscriptionsClient";
 import LoggedOutMessage from "@/components/LoggedOutMessage";
+import { currentUser } from "@clerk/nextjs/server";
+
 export const dynamic = "force-dynamic";
 
 export default async function SubscriptionsPage() {
-  const user = await getCurrentUser();
+  //  Check Clerk login
+  const clerkUser = await currentUser();
 
-  // Safety check (middleware already handles this)
- if (!user) {
-  return <LoggedOutMessage type="subscriptions" />;
-}
+  if (!clerkUser) {
+    return <LoggedOutMessage type="subscriptions" />;
+  }
 
-if (user.isGuest) {
-  return (
-    <LoggedOutMessage
-      type="subscriptions"
-      isGuest
-    />
-  );
-}
+  //  Resolve / create Prisma user
+  let user = await prisma.user.findUnique({
+    where: { clerkId: clerkUser.id },
+  });
 
+  if (!user) {
+    user = await prisma.user.create({
+      data: {
+        clerkId: clerkUser.id,
+        email:
+          clerkUser.emailAddresses?.[0]?.emailAddress ??
+          `${clerkUser.id}@clerk.user`,
+        name: clerkUser.fullName ?? "User",
+      },
+    });
+  }
 
-  // Get subscribed channels
+  //  Get subscribed channels
   const subs = await prisma.subscription.findMany({
     where: { userId: user.id },
   });
@@ -43,7 +51,7 @@ if (user.isGuest) {
     );
   }
 
-  // Get videos from subscribed channels
+  //  Fetch videos from subscribed channels
   const videos = await prisma.video.findMany({
     where: {
       channel: { in: channels },
@@ -52,7 +60,7 @@ if (user.isGuest) {
     orderBy: { createdAt: "desc" },
   });
 
-  // Group videos by channel
+  //  Group videos by channel
   const grouped = channels.map((channel) => ({
     channel,
     videos: videos.filter((v) => v.channel === channel),

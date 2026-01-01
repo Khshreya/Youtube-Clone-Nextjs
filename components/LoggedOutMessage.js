@@ -14,9 +14,7 @@ import {
 export default function LoggedOutMessage({ type, isGuest = false }) {
   let Icon;
   let title;
-  let subtitle;
-
-  // 🟡 Guest user message (same for all pages)
+  let subtitle;//  Guest user message (same for all pages)
   if (isGuest) {
     Icon = Info;
     title = "You’re browsing as a guest";
@@ -88,7 +86,7 @@ export default function LoggedOutMessage({ type, isGuest = false }) {
 
       {!isGuest && (
         <Link
-          href="/login"
+          href="/sign-in"
           className="px-6 py-2 rounded-full border
                      text-blue-600 font-medium
                      hover:bg-blue-50"

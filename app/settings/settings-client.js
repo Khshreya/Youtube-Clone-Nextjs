@@ -1,112 +1,22 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { User, Lock, Moon, Sun } from "lucide-react";
+import { Moon, Sun, Shield } from "lucide-react";
 import { useUIStore } from "@/store/uiStore";
+import { useClerk } from "@clerk/nextjs";
 
 export default function SettingsClient({ user }) {
-const isGuest = !user || user.isGuest;
+  const isGuest = !user;
 
+  const { openUserProfile } = useClerk();
 
   const darkMode = useUIStore((s) => s.darkMode);
   const toggleDarkMode = useUIStore((s) => s.toggleDarkMode);
-
-const [name, setName] = useState(user?.name || "");
-
-  const [oldPassword, setOldPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const updateName = async () => {
-    if (isGuest) return;
-    setLoading(true);
-    await fetch("/api/settings/name", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name }),
-    });
-    setLoading(false);
-    alert("Channel name updated");
-  };
-
-  const updatePassword = async () => {
-    if (isGuest) return;
-
-    if (!oldPassword || !newPassword) {
-      alert("Fill all fields");
-      return;
-    }
-
-    setLoading(true);
-    const res = await fetch("/api/settings/password", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ oldPassword, newPassword }),
-    });
-
-    const data = await res.json();
-    setLoading(false);
-
-    if (!res.ok) alert(data.error);
-    else {
-      alert("Password updated");
-      setOldPassword("");
-      setNewPassword("");
-    }
-  };
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
       <h1 className="text-3xl font-semibold mb-8">Settings</h1>
 
-      {/* ================= CHANNEL NAME ================= */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-6 mb-8">
-        <div className="flex items-center gap-3 mb-4">
-          <User className="text-red-600" />
-          <h2 className="text-lg font-semibold">Channel details</h2>
-        </div>
-
-        <label className="text-sm text-gray-500">Channel name</label>
-        <input
-          disabled={isGuest}
-          className={`
-            w-full mt-1 px-4 py-3 rounded-xl
-            bg-gray-100 dark:bg-gray-800
-            outline-none
-            ${
-              isGuest
-                ? "opacity-60 cursor-not-allowed"
-                : "focus:ring-2 focus:ring-red-500"
-            }
-          `}
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-
-        {isGuest && (
-          <p className="text-sm text-gray-500 mt-2">
-            Sign in to change your channel name.
-          </p>
-        )}
-
-        <button
-          onClick={updateName}
-          disabled={loading || isGuest}
-          className={`
-            mt-4 px-6 py-2.5 rounded-full font-medium transition
-            ${
-              isGuest
-                ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                : "bg-red-600 text-white hover:bg-red-700"
-            }
-          `}
-        >
-          Save changes
-        </button>
-      </div>
-
-      {/* ================= THEME ================= */}
+      {/* ================= APPEARANCE ================= */}
       <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-6 mb-8">
         <div className="flex items-center gap-3 mb-4">
           {darkMode ? (
@@ -123,107 +33,43 @@ const [name, setName] = useState(user?.name || "");
 
         <button
           onClick={toggleDarkMode}
-          className="
-            flex items-center gap-3
-            px-5 py-3 rounded-xl
-            bg-gray-100 dark:bg-gray-800
-            hover:bg-gray-200 dark:hover:bg-gray-700
-            transition
-          "
+          className="flex items-center gap-3 px-5 py-3 rounded-xl
+                     bg-gray-100 dark:bg-gray-800
+                     hover:bg-gray-200 dark:hover:bg-gray-700
+                     transition"
         >
-          {darkMode ? (
-            <>
-              <Sun size={18} />
-              <span className="text-sm font-medium">
-                Switch to Light mode
-              </span>
-            </>
-          ) : (
-            <>
-              <Moon size={18} />
-              <span className="text-sm font-medium">
-                Switch to Dark mode
-              </span>
-            </>
-          )}
+          {darkMode ? "Switch to Light mode" : "Switch to Dark mode"}
         </button>
       </div>
 
-      {/* ================= PASSWORD ================= */}
+      {/* ================= ACCOUNT (CLERK) ================= */}
       <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-6">
         <div className="flex items-center gap-3 mb-4">
-          <Lock className="text-red-600" />
-          <h2 className="text-lg font-semibold">Security</h2>
+          <Shield className="text-red-600" />
+          <h2 className="text-lg font-semibold">Account & security</h2>
         </div>
 
-        <label className="text-sm text-gray-500">
-          Current password
-        </label>
-        <input
-          type="password"
-          disabled={isGuest}
-          className={`
-            w-full mt-1 px-4 py-3 rounded-xl
-            bg-gray-100 dark:bg-gray-800
-            outline-none
-            ${
-              isGuest
-                ? "opacity-60 cursor-not-allowed"
-                : "focus:ring-2 focus:ring-red-500"
-            }
-          `}
-          value={oldPassword}
-          onChange={(e) => setOldPassword(e.target.value)}
-        />
-
-        <label className="text-sm text-gray-500 mt-4 block">
-          New password
-        </label>
-        <input
-          type="password"
-          disabled={isGuest}
-          className={`
-            w-full mt-1 px-4 py-3 rounded-xl
-            bg-gray-100 dark:bg-gray-800
-            outline-none
-            ${
-              isGuest
-                ? "opacity-60 cursor-not-allowed"
-                : "focus:ring-2 focus:ring-red-500"
-            }
-          `}
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-        />
-
-        {isGuest && (
-          <p className="text-sm text-gray-500 mt-2">
-            Password changes are disabled in guest mode.
-          </p>
-        )}
+        <p className="text-sm text-gray-500 mb-4">
+          Manage your name, password, email, profile photo and security settings.
+        </p>
 
         <button
-          onClick={updatePassword}
-          disabled={loading || isGuest}
-          className={`
-            mt-5 px-6 py-2.5 rounded-full font-medium transition
+          disabled={isGuest}
+          onClick={() => openUserProfile()}
+          className={`px-6 py-2.5 rounded-full font-medium transition
             ${
               isGuest
-                ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                : "bg-red-600 text-white hover:bg-red-700"
-            }
-          `}
+                ? "bg-gray-300 cursor-not-allowed text-gray-600"
+                : "bg-blue-600 text-white hover:bg-blue-700"
+            }`}
         >
-          Update password
+          Manage account
         </button>
 
         {isGuest && (
-          <Link
-            href="/login"
-            className="block mt-4 text-sm text-blue-600"
-          >
-            Sign in to unlock all settings
-          </Link>
+          <p className="text-sm text-gray-500 mt-3">
+            Sign in to manage your account.
+          </p>
         )}
       </div>
     </div>

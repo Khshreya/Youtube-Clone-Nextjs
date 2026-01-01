@@ -1,39 +1,45 @@
-
 import { prisma } from "@/lib/prisma";
-import { getCurrentUser } from "@/lib/auth";
-import VideoGridClient from "@/components/VideoGridClient";
 import LoggedOutMessage from "@/components/LoggedOutMessage";
+import VideoGridClient from "@/components/VideoGridClient";
+import { currentUser } from "@clerk/nextjs/server";
+
 export const dynamic = "force-dynamic";
 
 export default async function LikedVideosPage() {
-  const user = await getCurrentUser();
+  //  Check Clerk login
+  const clerkUser = await currentUser();
 
-   if (!user) {
-     return <LoggedOutMessage type="liked" />;
-   }
-  if (user.isGuest) {
-     return (
-       <LoggedOutMessage
-         type="liked"
-         isGuest
-       />
-     );
-   }
+  if (!clerkUser) {
+    return <LoggedOutMessage type="liked" />;
+  }
 
-  // Fetch liked video IDs
+  // Resolve / create Prisma user
+  let user = await prisma.user.findUnique({
+    where: { clerkId: clerkUser.id },
+  });
+
+  if (!user) {
+    user = await prisma.user.create({
+      data: {
+        clerkId: clerkUser.id,
+        email:
+          clerkUser.emailAddresses?.[0]?.emailAddress ??
+          `${clerkUser.id}@clerk.user`,
+        name: clerkUser.fullName ?? "User",
+      },
+    });
+  }
+
+  //  Get liked videos
   const likes = await prisma.like.findMany({
     where: {
       userId: user.id,
-      value: 1, // ONLY liked
+      value: 1,
     },
-    select: {
-      videoId: true,
-    },
+    select: { videoId: true },
   });
 
-  const videoIds = likes.map((l) => l.videoId);
-
-  if (videoIds.length === 0) {
+  if (likes.length === 0) {
     return (
       <div className="p-6">
         <h1 className="text-2xl font-semibold mb-4">
@@ -46,23 +52,12 @@ export default async function LikedVideosPage() {
     );
   }
 
-  // Fetch actual videos
+  //  Fetch videos
   const videos = await prisma.video.findMany({
     where: {
-      id: { in: videoIds },
-    },
-    orderBy: {
-      createdAt: "desc",
+      id: { in: likes.map((l) => l.videoId) },
     },
   });
 
-  return (
-    <div className="p-6">
-      <h1 className="text-2xl font-semibold mb-4">
-        Liked Videos
-      </h1>
-
-      <VideoGridClient videos={videos} />
-    </div>
-  );
+  return <VideoGridClient videos={videos} />;
 }

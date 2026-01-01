@@ -1,47 +1,48 @@
 import { prisma } from "@/lib/prisma";
-import { getCurrentUser } from "@/lib/auth";
 import VideoGridClient from "@/components/VideoGridClient";
 import LoggedOutMessage from "@/components/LoggedOutMessage";
+import { currentUser } from "@clerk/nextjs/server";
 
 export const dynamic = "force-dynamic";
 
 export default async function HistoryPage() {
-  const user = await getCurrentUser();
+  const clerkUser = await currentUser();
 
- 
-  if (!user) {
+  if (!clerkUser) {
     return <LoggedOutMessage type="history" />;
   }
- if (user.isGuest) {
+
+  const user = await prisma.user.findUnique({
+    where: { clerkId: clerkUser.id },
+  });
+
+  if (!user) {
     return (
-      <LoggedOutMessage
-        type="history"
-        isGuest
-      />
+      <p className="p-6 text-gray-500">
+        No history yet.
+      </p>
     );
   }
-  const historyRaw = await prisma.history.findMany({
+
+  const history = await prisma.history.findMany({
     where: { userId: user.id },
     orderBy: { watchedAt: "desc" },
     include: { video: true },
   });
 
-  // Remove duplicates (latest first)
   const seen = new Set();
   const videos = [];
 
-  for (const item of historyRaw) {
-    if (!seen.has(item.videoId)) {
-      seen.add(item.videoId);
-      videos.push(item.video);
+  for (const h of history) {
+    if (!seen.has(h.videoId)) {
+      seen.add(h.videoId);
+      videos.push(h.video);
     }
   }
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-semibold mb-4">
-        History
-      </h1>
+      <h1 className="text-2xl font-semibold mb-4">History</h1>
 
       {videos.length === 0 ? (
         <p className="text-gray-500">

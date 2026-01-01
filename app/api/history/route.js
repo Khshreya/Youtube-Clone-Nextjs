@@ -1,37 +1,47 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth";
+import { currentUser } from "@clerk/nextjs/server";
 
 export async function POST(req) {
-  const user = await getCurrentUser();
+  try {
+    //  Clerk session (SOURCE OF TRUTH)
+    const clerkUser = await currentUser();
 
-  if (!user) {
-    return NextResponse.json(
-      { error: "Unauthorized" },
-      { status: 401 }
-    );
-  }
+    if (!clerkUser) {
+      return NextResponse.json({ success: false });
+    }
 
-  // Guests do not get account-based watch history
-  if (user.isGuest) {
-    return NextResponse.json({ success: true });
-  }
+    //  Resolve Prisma user
+    let user = await prisma.user.findUnique({
+      where: { clerkId: clerkUser.id },
+    });
 
-  const { videoId } = await req.json();
+    //  Auto-create Prisma user (CRITICAL)
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          clerkId: clerkUser.id,
+          email:
+            clerkUser.emailAddresses?.[0]?.emailAddress ??
+            `${clerkUser.id}@clerk.user`,
+          name: clerkUser.fullName ?? "User",
+        },
+      });
+    }
 
-  await prisma.history.upsert({
-    where: {
-      userId_videoId: {
+    //  Save history (no duplicates)
+    const { videoId } = await req.json();
+
+    await prisma.history.create({
+      data: {
         userId: user.id,
         videoId,
       },
-    },
-    update: {},
-    create: {
-      userId: user.id,
-      videoId,
-    },
-  });
+    });
 
-  return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error("History save failed:", err);
+    return NextResponse.json({ success: false }, { status: 500 });
+  }
 }

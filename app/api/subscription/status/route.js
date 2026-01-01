@@ -1,21 +1,28 @@
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth";
+import { currentUser } from "@clerk/nextjs/server";
 
 export async function GET(req) {
-  const user = await getCurrentUser();
-  if (!user) {
+  const clerkUser = await currentUser();
+  if (!clerkUser) {
     return NextResponse.json({ subscribed: false });
   }
 
   const { searchParams } = new URL(req.url);
   const channel = searchParams.get("channel");
 
-  if (!channel) {
+  const user = await prisma.user.findUnique({
+    where: { clerkId: clerkUser.id },
+  });
+
+  if (!user || !channel) {
     return NextResponse.json({ subscribed: false });
   }
 
-  const existing = await prisma.subscription.findUnique({
+  const exists = await prisma.subscription.findUnique({
     where: {
       userId_channel: {
         userId: user.id,
@@ -24,7 +31,5 @@ export async function GET(req) {
     },
   });
 
-  return NextResponse.json({
-    subscribed: Boolean(existing),
-  });
+  return NextResponse.json({ subscribed: !!exists });
 }

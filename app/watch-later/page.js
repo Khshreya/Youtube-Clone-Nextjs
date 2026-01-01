@@ -1,25 +1,36 @@
 import { prisma } from "@/lib/prisma";
-import { getCurrentUser } from "@/lib/auth";
 import VideoGridClient from "@/components/VideoGridClient";
 import LoggedOutMessage from "@/components/LoggedOutMessage";
+import { currentUser } from "@clerk/nextjs/server";
+
 export const dynamic = "force-dynamic";
 
 export default async function WatchLaterPage() {
-  const user = await getCurrentUser();
-if (!user) {
-  return <LoggedOutMessage type="watchLater" />;
-}
+  //  Check Clerk login
+  const clerkUser = await currentUser();
 
-if (user.isGuest) {
-  return (
-    <LoggedOutMessage
-      type="watchLater"
-      isGuest
-    />
-  );
-}
+  if (!clerkUser) {
+    return <LoggedOutMessage type="watchLater" />;
+  }
 
+  // Resolve / create Prisma user
+  let user = await prisma.user.findUnique({
+    where: { clerkId: clerkUser.id },
+  });
 
+  if (!user) {
+    user = await prisma.user.create({
+      data: {
+        clerkId: clerkUser.id,
+        email:
+          clerkUser.emailAddresses?.[0]?.emailAddress ??
+          `${clerkUser.id}@clerk.user`,
+        name: clerkUser.fullName ?? "User",
+      },
+    });
+  }
+
+  //  Fetch Watch Later items
   const items = await prisma.watchLater.findMany({
     where: { userId: user.id },
     orderBy: { addedAt: "desc" },

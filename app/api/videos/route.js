@@ -20,7 +20,7 @@ export async function POST(req) {
   try {
     const user = await getCurrentUser();
 
-    if (!user || user.isGuest) {
+    if (!user) {
       return NextResponse.json(
         { error: "Login required" },
         { status: 401 }

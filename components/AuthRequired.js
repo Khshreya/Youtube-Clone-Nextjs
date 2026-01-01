@@ -14,7 +14,7 @@ export default function AuthRequired({
       <p className="text-gray-500 mb-6">{description}</p>
 
       <Link
-        href="/login"
+        href="/sign-in"
         className="px-6 py-2 bg-blue-600 text-white rounded-full"
       >
         Sign in

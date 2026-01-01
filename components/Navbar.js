@@ -1,4 +1,9 @@
 "use client";
+import {
+  useUser,
+  SignInButton,
+  UserButton,
+} from "@clerk/nextjs";
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
@@ -22,19 +27,21 @@ export default function Navbar() {
   const darkMode = useUIStore((s) => s.darkMode);
   const toggleDarkMode = useUIStore((s) => s.toggleDarkMode);
 
-  const [user, setUser] = useState(null);
+const { user, isSignedIn } = useUser();
+
   const [openMenu, setOpenMenu] = useState(false);
   const [openThemeMenu, setOpenThemeMenu] = useState(false);
 
   const menuRef = useRef(null);
+  
 
   /* ---------------- FETCH USER ---------------- */
-  useEffect(() => {
-    fetch("/api/auth/me")
-      .then((r) => r.json())
-      .then((d) => setUser(d?.user ?? null))
-      .catch(() => setUser(null));
-  }, []);
+  // useEffect(() => {
+  //   fetch("/api/auth/me")
+  //     .then((r) => r.json())
+  //     .then((d) => setUser(d?.user ?? null))
+  //     .catch(() => setUser(null));
+  // }, []);
 
   /* ---------------- CLOSE ON OUTSIDE CLICK ---------------- */
   useEffect(() => {
@@ -66,16 +73,17 @@ export default function Navbar() {
     pathname.startsWith("/upload") ||
     pathname.startsWith("/settings") ||
     pathname.startsWith("/shorts") ||
-    (isRestrictedSearchPage && (!user || user.isGuest));
+(isRestrictedSearchPage && !isSignedIn);
+
 
   /* ---------------- LOGOUT ---------------- */
-  const handleLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
-    setOpenMenu(false);
-    setOpenThemeMenu(false);
-    router.push("/login");
-    router.refresh();
-  };
+  // const handleLogout = async () => {
+  //   await fetch("/api/auth/logout", { method: "POST" });
+  //   setOpenMenu(false);
+  //   setOpenThemeMenu(false);
+  //   router.push("/login");
+  //   router.refresh();
+  // };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-900">
@@ -115,13 +123,19 @@ export default function Navbar() {
           {/* USER MENU */}
        {/* USER / GUEST MENU */}
 <div className="relative" ref={menuRef}>
-  <button
-    onClick={() => setOpenMenu((p) => !p)}
-    className="w-9 h-9 rounded-full bg-red-600 text-white
-               flex items-center justify-center font-semibold"
-  >
-    {user?.name ? user.name[0].toUpperCase() : "G"}
-  </button>
+{!isSignedIn && (
+  <SignInButton mode="modal">
+    <button
+      className="w-9 h-9 rounded-full bg-red-600 text-white
+                 flex items-center justify-center font-semibold"
+    >
+      G
+    </button>
+  </SignInButton>
+)}
+
+{isSignedIn && <UserButton />}
+
 
   {/* DROPDOWN */}
   <div
@@ -141,12 +155,13 @@ export default function Navbar() {
   >
     {/* USER / GUEST INFO */}
     <div className="px-4 py-3">
-      <p className="text-sm font-semibold">
-        {user?.name ?? "Guest User"}
-      </p>
-      <p className="text-xs text-gray-500">
-        {user?.email ?? "Sign in to unlock all features"}
-      </p>
+     <p className="text-sm font-semibold">
+  {isSignedIn ? user.fullName : "Guest User"}
+</p>
+<p className="text-xs text-gray-500">
+  {isSignedIn ? user.primaryEmailAddress?.emailAddress : "Sign in to unlock all features"}
+</p>
+
     </div>
 
     <div className="h-px bg-gray-200 dark:bg-gray-700" />
@@ -223,7 +238,7 @@ export default function Navbar() {
     <div className="h-px bg-gray-200 dark:bg-gray-700" />
 
     {/* GUEST → LOGIN */}
-    {!user && (
+    {/* {!user && (
       <Link
         href="/login"
         className="block px-4 py-2.5 text-sm
@@ -231,10 +246,10 @@ export default function Navbar() {
       >
         Login
       </Link>
-    )}
+    )} */}
 
     {/* LOGOUT (ONLY LOGGED IN USER) */}
-    {user && (
+    {/* {user && (
       <button
         onClick={handleLogout}
         className="w-full flex items-center gap-3
@@ -244,7 +259,7 @@ export default function Navbar() {
         <LogOut size={18} />
         Logout
       </button>
-    )}
+    )} */}
   </div>
 </div>
 
