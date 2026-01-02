@@ -5,8 +5,6 @@ import VideoGridClient from "@/components/VideoGridClient";
 import ShortsRow from "@/components/ShortsRow";
 
 export default async function Home() {
- 
-
   const shorts = await prisma.video.findMany({
     where: { contentType: "short" },
     orderBy: { createdAt: "desc" },
@@ -23,9 +21,18 @@ export default async function Home() {
 
   return (
     <div className="space-y-10 pb-10">
-      <VideoGridClient videos={firstBatch} />
+      {/* First grid */}
+      {firstBatch.length > 0 && (
+        <VideoGridClient videos={firstBatch} />
+      )}
+
+      {/* Shorts */}
       {shorts.length > 0 && <ShortsRow shorts={shorts} />}
-      <VideoGridClient videos={remainingVideos} />
+
+      {/* Remaining videos */}
+      {remainingVideos.length > 0 && (
+        <VideoGridClient videos={remainingVideos} />
+      )}
     </div>
   );
 }
