@@ -145,7 +145,7 @@ export default function LoginPage() {
                 </div>
 
                 {/* Forgot Password */}
-                <div className="flex items-center justify-end">
+                {/* <div className="flex items-center justify-end">
                   <button
                     type="button"
                     onClick={() => router.push("/forgot-password")}
@@ -154,7 +154,7 @@ export default function LoginPage() {
                   >
                     Forgot password?
                   </button>
-                </div>
+                </div> */}
 
                 {/* Submit Button */}
                 <button
