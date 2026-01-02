@@ -22,16 +22,12 @@
     "lucide-react": "^0.561.0",
     "next": "^16.1.1",
     "prisma": "^6.19.1",
-  "react": "^18.2.0",
-"react-dom": "^18.2.0",
-
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "react-icons": "^5.5.0",
     "svix": "^1.84.1",
     "swiper": "^12.0.3",
     "zustand": "^5.0.9"
-  },
-  "prisma": {
-    "seed": "node prisma/seed.js"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
